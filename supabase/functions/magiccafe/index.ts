@@ -104,7 +104,7 @@ Deno.serve(async (req) => {
       const r = await fetch("https://api.anthropic.com/v1/messages", {
         method: "POST",
         headers: { "x-api-key": key, "anthropic-version": "2023-06-01", "content-type": "application/json" },
-        body: JSON.stringify({ model: MODEL, max_tokens: 900, temperature: 0.2, messages: [{ role: "user", content }] }),
+        body: JSON.stringify({ model: MODEL, max_tokens: 900, messages: [{ role: "user", content }] }),
       });
       const data = await r.json();
       const ms = Date.now() - t0;
