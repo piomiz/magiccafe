@@ -2081,7 +2081,7 @@ var GRIND_RULES={
 var KB={loaded:false};
 function kbRecipes(){
   var out=V60_RECIPES.slice(),db=(KB.data&&KB.data.recipes)||[];
-  db.filter(function(r){return r.method==='v60'}).forEach(function(r){var i=-1;out.forEach(function(x,j){if(x.slug===r.slug)i=j});if(i>=0)out[i]=r;else out.push(r)});
+  db.filter(function(r){return r.method==='v60'}).forEach(function(r){['dose_g','water_g','ratio','temp_c','temp2_c','grind_microns','total_s','year'].forEach(function(f){r[f]=r[f]==null||r[f]===''?null:+r[f]});if(!Array.isArray(r.pours))r.pours=[];if(!Array.isArray(r.tips))r.tips=[];var i=-1;out.forEach(function(x,j){if(x.slug===r.slug)i=j});if(i>=0)out[i]=r;else out.push(r)});
   var L=App.state&&App.state.label,reco=L&&L.reco;
   if(reco&&reco.method==='v60'&&reco.dose_g&&reco.water_g)out.unshift(roasterRecipe(reco,L));
   out.push({slug:'magic3',name:'Klasyk Magic Cafe – trzy lania',author:'Magic Cafe',credential:'przepis domowy',classic:true});
