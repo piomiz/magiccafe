@@ -795,6 +795,39 @@ input[type=text],input[type=number],input[type=date],select,textarea{border:2px 
       </figure>
     </section>
 
+    <section class="sec" id="kawa-label-sec">
+      <div class="sec-head"><p class="eyebrow">Etykieta</p><h2>Sfotografuj paczkę, dostaniesz przepis</h2>
+        <p class="lede">Zdjęcie etykiety wystarczy, żeby odczytać kraj, obróbkę, palenie i datę palenia. Na tej podstawie dobieram metodę, temperaturę, proporcję i mielenie zgodnie ze sztuką parzenia.</p></div>
+      <div class="cols two">
+        <div class="panel">
+          <div class="drop" id="kawa-label-drop">
+            <div id="kawa-label-empty" class="muted">Tu pojawi się zdjęcie etykiety.<br>Zrób je z bliska, przy dobrym świetle, tak aby tekst był ostry.</div>
+            <img id="kawa-label-preview" alt="Podgląd zdjęcia etykiety" hidden>
+          </div>
+          <div class="row">
+            <label class="btn" for="kawa-label-camera">Zrób zdjęcie</label>
+            <label class="btn ghost" for="kawa-label-file">Wybierz z galerii</label>
+            <input type="file" id="kawa-label-camera" accept="image/*" capture="environment" hidden>
+            <input type="file" id="kawa-label-file" accept="image/*" hidden>
+          </div>
+          <div class="row">
+            <button class="btn" type="button" id="kawa-label-run" disabled>Odczytaj etykietę</button>
+            <button class="btn ghost" type="button" id="kawa-label-stop" hidden>Przerwij</button>
+          </div>
+          <p class="muted" id="kawa-label-hint" role="status" aria-live="polite"></p>
+          <details class="myth" id="kawa-label-manual"><summary>Wpisz dane z etykiety ręcznie</summary>
+            <div class="cols even" style="margin-top:10px">
+              <div class="field"><label for="kawa-label-date">Data palenia</label><input type="date" id="kawa-label-date"></div>
+              <div class="field"><label for="kawa-label-alt">Wysokość uprawy (m n.p.m.)</label><input type="number" id="kawa-label-alt" min="0" max="3000" step="50" inputmode="numeric" placeholder="np. 1800"></div>
+            </div>
+            <div class="field"><label for="kawa-label-notes">Nuty smakowe z etykiety</label><input type="text" id="kawa-label-notes" maxlength="120" placeholder="np. jagoda, bergamotka, kakao"></div>
+            <p class="muted" style="font-size:.88rem">Kraj, palenie i obróbkę wybierz u góry strony. Z tych danych powstaje przepis obok.</p>
+          </details>
+        </div>
+        <div class="panel soft" id="kawa-label-out"></div>
+      </div>
+    </section>
+
     <section class="sec">
       <div class="sec-head"><p class="eyebrow">Kraj pochodzenia</p><h2 id="kawa-origin-title"></h2></div>
       <div class="cols two">
@@ -2024,7 +2057,7 @@ function start(){
 
 (function(){
 App.key='aloha-kawa-v1';
-load({origin:'mix',roast:'medium',proc:'washed',esp:{dose:18,p:33},v60:{dose:15,p:30},cold:{dose:100,p:40},batch:{dose:1,p:35}});
+load({origin:'mix',roast:'medium',proc:'washed',label:{name:'',roaster:'',region:'',variety:'',alt:0,date:'',best:'',notes:'',use:'',decaf:false,robusta:false,note:'',read:0},esp:{dose:18,p:33},v60:{dose:15,p:30},cold:{dose:100,p:40},batch:{dose:1,p:35}});
 App.tabs=['ziarno','esp','v60','cold','batch','wiedza'];
 App.selectors=[
   {key:'origin',label:'Kraj',type:'select',groups:[['',[['mix','Mieszanka / nie wiem']]],
@@ -2268,6 +2301,155 @@ function renderHome(){
   $('#origin-title').textContent=x.O.n;kv($('#origin-kv'),x.O.kv);meters($('#origin-meters'),tm(5+x.O.A,7+x.O.S,4+(x.O.B||0),6+x.O.Bo));$('#origin-fact').textContent=x.O.fact;
 }
 App.extras.push(renderHome);
+
+/* ---------- ETYKIETA: zdjęcie paczki, odczyt i przepis ---------- */
+var LAB={blob:null,url:null,busy:false,ready:false,sample:null,ctl:null,res:null};
+var LAB_ERR={not_granted:'Odczyt etykiety wymaga Twojej zgody na użycie Claude na tej stronie. Możesz też wpisać dane ręcznie poniżej.',rate_limited:'Za dużo zapytań naraz. Spróbuj ponownie za chwilę.',session_expired:'Sesja wygasła. Zaloguj się ponownie do Claude.',image_rejected:'Nie udało się odczytać tego zdjęcia. Wybierz inne, w formacie JPG lub PNG.',refused:'Tego zdjęcia nie mogę odczytać. Zrób inne ujęcie samej etykiety.',invalid_json:'Odpowiedź przyszła w złym formacie. Spróbuj jeszcze raz.',images_unavailable:'W tym widoku nie można wysyłać zdjęć. Wpisz dane z etykiety ręcznie.',too_large:'Zdjęcie jest za duże. Zrób je ponownie w niższej rozdzielczości.'};
+var ORIGIN_KEYS=Object.keys(ORIGIN).filter(function(k){return k!=='mix'});
+function labHint(t){$('#label-hint').textContent=t}
+function labUI(){
+  var run=$('#label-run');
+  run.disabled=!LAB.blob||LAB.busy||!LAB.ready;run.hidden=LAB.sample===false;
+  run.textContent=LAB.busy?'Czytam etykietę…':'Odczytaj etykietę';
+  $('#label-stop').hidden=!LAB.busy;
+  if(LAB.sample===false)labHint(LAB.blob?'Automatyczny odczyt działa po otwarciu tej strony w Claude. Tu wpisz dane z etykiety ręcznie, a przepis policzy się tak samo.':'Automatyczny odczyt działa po otwarciu tej strony w Claude. Tu wybierz kraj, palenie i obróbkę u góry oraz wpisz datę palenia poniżej.');
+  else if(!LAB.ready)labHint('Sprawdzam, czy odczyt zdjęć jest dostępny…');
+  else if(!LAB.blob)labHint('Dodaj zdjęcie etykiety, aby ją odczytać.');
+  else if(!LAB.busy)labHint('Zdjęcie gotowe. Odczyt trwa zwykle 10–30 sekund.');
+}
+function labPhoto(file){
+  if(!file||!/^image\//.test(file.type||'image/')){labHint('To nie wygląda na zdjęcie. Wybierz plik JPG lub PNG.');return}
+  var url=URL.createObjectURL(file),img=new Image();
+  img.onload=function(){
+    var k=Math.min(1,1600/Math.max(img.naturalWidth,img.naturalHeight)),c=document.createElement('canvas');
+    c.width=Math.round(img.naturalWidth*k);c.height=Math.round(img.naturalHeight*k);
+    c.getContext('2d').drawImage(img,0,0,c.width,c.height);
+    c.toBlob(function(blob){
+      if(!blob){labHint('Nie udało się przygotować zdjęcia. Spróbuj z innym plikiem.');return}
+      if(LAB.url)URL.revokeObjectURL(LAB.url);
+      LAB.blob=blob;LAB.url=URL.createObjectURL(blob);URL.revokeObjectURL(url);
+      var p=$('#label-preview');p.src=LAB.url;p.hidden=false;$('#label-empty').hidden=true;labUI();
+    },'image/jpeg',.88);
+  };
+  img.onerror=function(){URL.revokeObjectURL(url);labHint('Przeglądarka nie potrafi otworzyć tego pliku. Zrób zdjęcie w formacie JPG.')};
+  img.src=url;
+}
+function labPrompt(){
+  var oc=ORIGIN_KEYS.map(function(k){return k+'='+ORIGIN[k].n}).join(', ');
+  var pc=Object.keys(PROC).map(function(k){return k+'='+PROC[k].n}).join(', ');
+  return 'Na zdjęciu jest etykieta lub opakowanie kawy. Odczytaj z niej dane potrzebne do zaparzenia tej kawy. Czytaj tylko to, co naprawdę jest napisane; gdy czegoś nie ma, wpisz null. Nie zgaduj kraju z nazwy palarni.\n'+
+  'Kody krajów: '+oc+'. Jeśli kraj jest spoza listy, wpisz null w "kraj" i podaj nazwę w "kraj_inny". Mieszanka kilku krajów: "kraj": null, "mieszanka": true.\n'+
+  'Kody obróbki: '+pc+'. Myta po angielsku to washed lub fully washed; natural to dry process; anaerobowa to anaerobic; kofermentacja to co-fermented lub infused; wet-hulled to giling basah.\n'+
+  'Palenie: "light" (jasne, filter roast, omniroast, light, nordic), "medium" (średnie, medium, espresso roast bez słowa dark), "dark" (ciemne, dark, italian, french). Jeśli etykieta mówi tylko "do espresso", wpisz "medium"; jeśli "do przelewu" lub "filter", wpisz "light".\n'+
+  'Daty podaj w formacie RRRR-MM-DD. Polskie etykiety piszą zwykle "data palenia" lub "palona"; angielskie "roasted on" lub "roast date". Datę ważności ("najlepiej spożyć przed", "best before") wpisz do "waznosc", nie do "data_palenia".\n'+
+  'Odpowiedz wyłącznie jednym obiektem JSON:\n{"jest_etykieta":true|false,"nazwa":"nazwa kawy lub null","palarnia":"nazwa palarni lub null","kraj":"kod z listy lub null","kraj_inny":"string lub null","mieszanka":true|false,"region":"string lub null","farma":"string lub null","odmiana":"string lub null","wysokosc_m":liczba lub null,"obrobka":"kod z listy lub null","palenie":"light"|"medium"|"dark"|null,"data_palenia":"RRRR-MM-DD lub null","waznosc":"RRRR-MM-DD lub null","nuty":["do 5 krótkich nut smakowych po polsku"],"przeznaczenie":"espresso"|"przelew"|"uniwersalna"|null,"bezkofeinowa":true|false,"robusta":true|false,"uwagi":"jedno zdanie po polsku, jeśli coś jest niejasne, inaczej null"}';
+}
+function labRun(){
+  if(!LAB.blob||!LAB.ready||LAB.busy)return;
+  LAB.busy=true;LAB.ctl=new AbortController();labUI();labHint('Czytam etykietę. Za pierwszym razem Claude zapyta o zgodę.');
+  LAB.sample.json(labPrompt(),{images:[LAB.blob],signal:LAB.ctl.signal}).then(function(r){
+    LAB.busy=false;labUI();labApply(r);
+  }).catch(function(e){
+    LAB.busy=false;var code=e&&e.code;
+    if(code==='not_granted'||code==='sampling_disabled'||code==='not_declared'||code==='capability_disabled'||code==='capability_removed'||code==='images_unavailable'){LAB.ready=false;LAB.sample=false}
+    labUI();
+    if(code!=='cancelled')labHint(LAB_ERR[code]||'Coś przerwało odczyt. Spróbuj ponownie za chwilę.');
+  });
+}
+function str(v,n){return typeof v==='string'&&v.trim()?v.trim().slice(0,n||80):''}
+function isoDate(v){return /^\d{4}-\d{2}-\d{2}$/.test(str(v))&&!isNaN(new Date(v).getTime())?v:''}
+function labApply(r){
+  if(!r||typeof r!=='object'||r.jest_etykieta===false){labHint('Na zdjęciu nie widzę etykiety kawy. Zrób zdjęcie z bliska, tak aby tekst dało się przeczytać.');return}
+  var st=App.state,L=st.label,ch=[];
+  if(r.kraj&&ORIGIN[r.kraj]&&r.kraj!=='mix'){st.origin=r.kraj;ch.push('kraj: '+ORIGIN[r.kraj].n)}
+  else if(r.mieszanka||r.kraj_inny){st.origin='mix';ch.push(r.kraj_inny?'kraj spoza listy: '+str(r.kraj_inny,40)+', liczę jak dla mieszanki':'mieszanka')}
+  if(r.palenie&&ROAST[r.palenie]){st.roast=r.palenie;ch.push('palenie: '+ROAST[r.palenie].n.toLowerCase())}
+  if(r.obrobka&&PROC[r.obrobka]){st.proc=r.obrobka;ch.push('obróbka: '+PROC[r.obrobka].n.replace('Obróbka ','').toLowerCase())}
+  L.name=str(r.nazwa,60);L.roaster=str(r.palarnia,60);L.region=[str(r.region,50),str(r.farma,50)].filter(Boolean).join(', ');L.variety=str(r.odmiana,60);
+  L.alt=typeof r.wysokosc_m==='number'&&r.wysokosc_m>0&&r.wysokosc_m<4000?Math.round(r.wysokosc_m):0;
+  L.date=isoDate(r.data_palenia);L.best=isoDate(r.waznosc);
+  L.notes=Array.isArray(r.nuty)?r.nuty.filter(function(x){return typeof x==='string'&&x.trim()}).slice(0,5).join(', ').slice(0,120):'';
+  L.use=r.przeznaczenie==='espresso'||r.przeznaczenie==='przelew'||r.przeznaczenie==='uniwersalna'?r.przeznaczenie:'';
+  L.decaf=!!r.bezkofeinowa;L.robusta=!!r.robusta;L.note=str(r.uwagi,160);L.read=Date.now();
+  if(L.date)ch.push('data palenia: '+L.date);
+  LAB.inputsSynced=false;save();renderAll();
+  labHint(ch.length?'Odczytane i ustawione: '+ch.join('; ')+'.':'Etykietę odczytałem, ale nie było na niej kraju, palenia ani obróbki. Ustaw je u góry strony.');
+  if(L.note)labHint($('#label-hint').textContent+' '+L.note);
+  $('#label-out').scrollIntoView({behavior:window.matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth',block:'nearest'});
+}
+function daysSince(iso){if(!iso)return null;var d=new Date(iso+'T12:00:00'),n=new Date();return Math.floor((n-d)/864e5)}
+function fresh(days,R,espresso){
+  if(days==null)return null;
+  var lo=espresso?(R===ROAST.light?10:R===ROAST.dark?5:7):(R===ROAST.light?5:3),hi=espresso?(R===ROAST.light?21:R===ROAST.dark?10:14):(R===ROAST.light?10:7);
+  if(days<0)return ['s-warn','Data palenia jest w przyszłości. Sprawdź, czy to nie data ważności.'];
+  if(days<lo)return ['s-warn','Za świeża: '+days+' dni po paleniu. Ziarno oddaje dużo CO₂, espresso będzie kwaśne i nierówne. Daj jej jeszcze '+(lo-days)+' dni albo parz w przelewie, który wybacza świeżość.'];
+  if(days<=hi)return ['s-ok','W najlepszym oknie: '+days+' dni po paleniu (dla tej kawy '+lo+'–'+hi+' dni).'];
+  if(days<=45)return ['s-ok',days+' dni po paleniu. Nadal dobra, choć aromat powoli słabnie. Zmiel odrobinę drobniej, bo kawa traci gaz i parzy się szybciej.'];
+  if(days<=90)return ['s-warn',days+' dni po paleniu. Kawa jest płaska i daje mało cremy. Zmiel drobniej, podnieś dawkę o 1 g i wypij ją w pierwszej kolejności.'];
+  return ['s-bad',days+' dni po paleniu. Ziarno jest stare: aromat uleciał, olejki zjełczały. Nadaje się raczej na cold brew albo do mleka.'];
+}
+function pickMethod(st,L){
+  var x=rp(st),R=x.R,P=x.P,O=x.O;
+  var s={esp:0,v60:0,cold:0,batch:0};
+  if(R===ROAST.light){s.v60+=3;s.batch+=1;s.esp-=1}
+  if(R===ROAST.medium){s.esp+=2;s.v60+=1;s.batch+=1}
+  if(R===ROAST.dark){s.esp+=2;s.cold+=2;s.v60-=2}
+  if(O.A>=1){s.v60+=2}if(O.Bo>=1){s.esp+=1;s.cold+=1}
+  if(P===PROC.washed){s.v60+=1}if(P===PROC.honey||P===PROC.pulped){s.esp+=2}if(P===PROC.natural){s.esp+=1;s.cold+=1}
+  if(P===PROC.anaer||P===PROC.carbonic||P===PROC.cofer){s.v60+=2;s.cold+=1}if(P===PROC.wet||P===PROC.monsoon){s.esp+=1;s.cold+=1}
+  if(L.use==='espresso')s.esp+=4;if(L.use==='przelew'){s.v60+=4;s.batch+=2}
+  if(L.robusta){s.esp+=1;s.v60-=2}
+  var d=daysSince(L.date);if(d!=null&&d<(R===ROAST.light?10:7)){s.esp-=2;s.v60+=1}if(d!=null&&d>90){s.cold+=4;s.esp-=2}
+  return Object.keys(s).sort(function(a,b){return s[b]-s[a]});
+}
+var MNAME={esp:['Espresso',ESP],v60:['V60',V60],cold:['Cold brew',COLD],batch:['Przelew',BATCH]};
+var MWHY={esp:'Słodycz, body i czekoladowe nuty tej kawy najlepiej zagęszcza ciśnienie.',v60:'Kwasowość i aromat tej kawy słychać najwyraźniej w czystym przelewie.',cold:'Niska kwasowość i ciężkie body dobrze znoszą długą, zimną macerację.',batch:'Zbalansowana kawa na co dzień, łatwa do zaparzenia w większej ilości.'};
+function renderLabel(){
+  var st=App.state,L=st.label,x=rp(st),R=x.R,P=x.P,O=x.O,out=$('#label-out'),d=daysSince(L.date);
+  if(!LAB.inputsSynced){$('#label-date').value=L.date||'';$('#label-alt').value=L.alt||'';$('#label-notes').value=L.notes||'';LAB.inputsSynced=true}
+  var order=pickMethod(st,L),best=order[0],m=MNAME[best],alt=MNAME[order[1]],f=fresh(d,R,best==='esp');
+  var head=L.name||L.roaster?(L.roaster?L.roaster+' · ':'')+(L.name||''):'Przepis dla tej kawy';
+  var meta=[O.n!==ORIGIN.mix.n?O.n+(L.region?' ('+L.region+')':''):L.region||'',L.variety,R.n.toLowerCase(),P.n.replace('Obróbka ','').toLowerCase(),L.alt?L.alt+' m n.p.m.':'',L.decaf?'bezkofeinowa':'',L.robusta?'robusta':''].filter(Boolean).join(' · ');
+  var A=L.alt?Math.max(600,Math.min(2200,L.alt)):0;
+  var tips=[];
+  tips.push('Metoda: '+m[0]+'. '+MWHY[best]+' Druga w kolejności: '+alt[0]+'.');
+  tips.push('Parametry: '+m[1].last.sum+'.');
+  tips.push('Mielenie: '+(best==='esp'?'bardzo drobne.':best==='cold'?'grube.':best==='v60'?'średnio-drobne.':'średnie.')+' '+R.grind);
+  if(P.hint)tips.push(P.hint);if(O.hint)tips.push(O.hint);
+  if(A>=1800)tips.push('Wysoka uprawa, gęste ziarno: miel o krok drobniej i trzymaj górną granicę temperatury.');
+  else if(A&&A<=1100)tips.push('Niska uprawa, miękkie ziarno: parz delikatniej, grubiej i chłodniej.');
+  if(L.decaf)tips.push('Kawa bezkofeinowa jest bardziej krucha: miel grubiej i parz o 1–2 °C chłodniej.');
+  if(L.robusta)tips.push('Robusta lub jej domieszka: więcej goryczy i cremy. Krótsza proporcja w espresso i mleko bardzo jej pasują.');
+  if(L.notes)tips.push('Na etykiecie: '+L.notes+'. Jeśli tych nut nie czujesz, kawa jest zwykle niedoparzona: zmiel drobniej albo wydłuż parzenie.');
+  tips.push('Odpoczynek po paleniu dla tego palenia: '+R.rest+'.');
+  out.textContent='';
+  [h('p',{class:'eyebrow',text:'Zgodnie ze sztuką parzenia'}),h('h3',{text:head}),meta?h('p',{class:'muted',style:'font-size:.9rem',text:meta}):null,
+    f?h('span',{class:'pill '+f[0],style:'align-self:flex-start',text:f[1].split(':')[0].split('.')[0]}):null,f?h('p',{text:f[1]}):null,
+    h('dl',{class:'kv'},order.map(function(k){return [h('dt',{text:MNAME[k][0]+(k===best?' ★':'')}),h('dd',{text:MNAME[k][1].last.sum})]}).reduce(function(a,b){return a.concat(b)},[])),
+    h('ol',{class:'list steps-list'},tips.map(function(t){return h('li',{text:t})})),
+    h('div',{class:'row'},h('button',{class:'btn',type:'button','data-go':best,text:'Parzę '+m[0].toLowerCase()}),h('button',{class:'btn ghost',type:'button','data-go':order[1],text:'Albo '+alt[0].toLowerCase()})),
+    L.read?h('p',{class:'muted',style:'font-size:.85rem',text:'Dane z etykiety odczytane '+new Date(L.read).toLocaleDateString('pl-PL')+'. Możesz je poprawić ręcznie poniżej zdjęcia.'}):null].forEach(function(n){if(n)out.append(n)});
+}
+App.extras.push(renderLabel);
+App.extras.push(function(){
+  if(LAB.wired)return;LAB.wired=true;
+  ['label-camera','label-file'].forEach(function(id){$('#'+id).addEventListener('change',function(ev){labPhoto(ev.target.files&&ev.target.files[0]);ev.target.value=''})});
+  var drop=$('#label-drop');
+  ['dragenter','dragover'].forEach(function(n){drop.addEventListener(n,function(ev){ev.preventDefault();drop.classList.add('over')})});
+  ['dragleave','drop'].forEach(function(n){drop.addEventListener(n,function(ev){ev.preventDefault();drop.classList.remove('over')})});
+  drop.addEventListener('drop',function(ev){var f=ev.dataTransfer&&ev.dataTransfer.files&&ev.dataTransfer.files[0];if(f)labPhoto(f)});
+  $('#label-run').addEventListener('click',labRun);
+  $('#label-stop').addEventListener('click',function(){if(LAB.ctl)LAB.ctl.abort()});
+  $('#label-date').addEventListener('change',function(ev){App.state.label.date=isoDate(ev.target.value);save();renderLabel()});
+  $('#label-alt').addEventListener('change',function(ev){var v=parseInt(ev.target.value,10);App.state.label.alt=v>0&&v<4000?v:0;save();renderLabel()});
+  $('#label-notes').addEventListener('input',function(ev){App.state.label.notes=ev.target.value.slice(0,120);save();renderLabel()});
+  labUI();
+  if(!window.claude||!window.claude.use){LAB.sample=false;labUI();return}
+  window.claude.use('sample').then(function(s){
+    if(!s){LAB.sample=false;labUI();return}
+    return s.limits().catch(function(){return null}).then(function(l){if(l&&l.images){LAB.sample=s;LAB.ready=true}else LAB.sample=false;labUI()});
+  }).catch(function(){LAB.sample=false;labUI()});
+});
 
 /* ---------- WIEDZA ---------- */
 var OKFIX=['Nic nie zmieniaj.','Zapisz przepis: dawkę, uzysk lub ilość wody, czas i nastawę młynka.','Następnym razem zmień tylko jedną rzecz, jeśli chcesz sprawdzić inny profil.'];
