@@ -247,6 +247,7 @@ footer{border-top:1px solid var(--line);padding-top:18px;font-size:.86rem;color:
 
 /* dodatki dla aplikacji z metodami parzenia */
 .beanbar{display:flex;flex-direction:column;gap:10px}
+.recipes{display:flex;flex-direction:column;gap:8px;margin-top:4px}
 .selrow{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:8px}
 .meters{display:flex;flex-direction:column;gap:10px}
 .meter{display:grid;grid-template-columns:6.4em minmax(0,1fr) 1.6em;gap:10px;align-items:center;font-size:.92rem}
@@ -1178,6 +1179,47 @@ input[type=text],input[type=number],input[type=date],select,textarea{border:2px 
 </div></dialog>
 <script>
 window.__magic={};
+/* ---------- Magic Cafe: silnik wiedzy i oceny zdjęć (Supabase) ----------
+   W artefakcie Claude działa window.claude.use('sample'). Na stronie publicznej
+   (GitHub Pages) ten sam interfejs obsługuje poniższy adapter, który woła
+   Edge Function "magiccafe" w Supabase (klucz Anthropic trzymany po stronie serwera). */
+window.MC_AI=(function(){
+  var URL_='https://yjbicbaqjzaumovrcvpl.supabase.co/functions/v1/magiccafe',KK='magiccafe-knowledge-v1',TTL=6*36e5;
+  var know=null,knowP=null;
+  function post(body,signal){
+    return fetch(URL_,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(body),signal:signal}).then(function(r){
+      return r.json().catch(function(){return {error:{code:'invalid_json',message:'Zła odpowiedź serwera'}}}).then(function(j){
+        if(!r.ok||j.error){var e=new Error((j.error&&j.error.message)||('HTTP '+r.status));e.code=(j.error&&j.error.code)||'server';if(e.code==='not_granted')e.code='ai_off';throw e}
+        return j;
+      });
+    }).catch(function(e){if(e&&e.name==='AbortError'){var c=new Error('cancelled');c.code='cancelled';throw c}throw e});
+  }
+  function b64(blob){
+    return new Promise(function(res,rej){var fr=new FileReader();fr.onload=function(){res(String(fr.result).split(',')[1])};fr.onerror=rej;fr.readAsDataURL(blob)});
+  }
+  var sample={
+    limits:function(){return post({action:'limits'}).then(function(j){return {images:!!j.images,remaining:j.remaining,key:j.key}}).catch(function(){return {images:false}})},
+    json:function(prompt,opts){
+      opts=opts||{};var imgs=opts.images||[];
+      return Promise.all(imgs.map(function(b){return b64(b).then(function(d){return {media_type:b.type||'image/jpeg',data:d}})})).then(function(images){
+        return post({action:'vision',prompt:prompt,mode:opts.mode||'other',images:images},opts.signal);
+      }).then(function(j){return j.result});
+    }
+  };
+  function knowledge(){
+    if(know)return Promise.resolve(know);
+    try{var c=JSON.parse(localStorage.getItem(KK));if(c&&c.t&&Date.now()-c.t<TTL&&c.d){know=c.d;window.MC_AI&&(window.MC_AI.kombText=know.kombText);return Promise.resolve(know)}}catch(e){}
+    if(knowP)return knowP;
+    knowP=post({action:'knowledge'}).then(function(j){know=j;try{j.kombText=(j.kombucha_rules||[]).map(function(k){return k.feature+': zdrowe – '+k.healthy+(k.watch?'; obserwuj – '+k.watch:'')+'; pleśń/wyrzuć – '+k.bad}).join('\n')}catch(e){}try{localStorage.setItem(KK,JSON.stringify({t:Date.now(),d:j}))}catch(e){}return j}).catch(function(){knowP=null;return null});
+    return knowP;
+  }
+  function roaster(name){return name?post({action:'roaster',roaster:name}).then(function(j){return j.recipes||[]}).catch(function(){return []}):Promise.resolve([])}
+  return {sample:sample,knowledge:knowledge,roaster:roaster,url:URL_,remote:true};
+})();
+if(!window.claude||!window.claude.use){
+  window.claude={use:function(name){return Promise.resolve(name==='sample'?window.MC_AI.sample:null)},_magiccafe:true};
+}
+
 
 (function(){
 'use strict';
@@ -1712,7 +1754,7 @@ function renderFacts(){
 
 /* ---------- widok: kontrola zdjęcia ---------- */
 var photo={blob:null,url:null,busy:false,ctl:null,sample:null,ready:false};
-var ERR={not_granted:'Ocena zdjęć wymaga Twojej zgody na użycie Claude na tej stronie. Skorzystaj z listy obok.',rate_limited:'Za dużo zapytań naraz. Spróbuj ponownie za chwilę.',session_expired:'Sesja wygasła. Zaloguj się ponownie do Claude.',image_rejected:'Nie udało się odczytać tego zdjęcia. Wybierz inne, w formacie JPG lub PNG.',refused:'Tego zdjęcia nie mogę ocenić. Zrób inne ujęcie samego słoja.',invalid_json:'Odpowiedź przyszła w złym formacie. Spróbuj jeszcze raz.',images_unavailable:'W tym widoku nie można wysyłać zdjęć do oceny. Skorzystaj z listy obok.'};
+var ERR={ai_off:'Ocena zdjęć jest jeszcze nieaktywna na tej stronie (brak klucza AI). Porównaj zdjęcie z listą obok.',not_granted:'Ocena zdjęć wymaga Twojej zgody na użycie Claude na tej stronie. Skorzystaj z listy obok.',rate_limited:'Za dużo zapytań naraz. Spróbuj ponownie za chwilę.',session_expired:'Sesja wygasła. Zaloguj się ponownie do Claude.',image_rejected:'Nie udało się odczytać tego zdjęcia. Wybierz inne, w formacie JPG lub PNG.',refused:'Tego zdjęcia nie mogę ocenić. Zrób inne ujęcie samego słoja.',invalid_json:'Odpowiedź przyszła w złym formacie. Spróbuj jeszcze raz.',images_unavailable:'W tym widoku nie można wysyłać zdjęć do oceny. Skorzystaj z listy obok.'};
 function photoHint(t){$('#photo-hint').textContent=t}
 function photoUI(){
   var run=$('#photo-run');run.hidden=photo.sample===false;
@@ -1746,6 +1788,7 @@ function buildPrompt(){
   'Kontekst od użytkownika: na zdjęciu jest '+$('#photo-what').value+'. Dzień fermentacji: '+(d>=0?d:'nie podano')+'. Przepis: na litr 4–6 g herbaty, '+(b.sweet==='honey'?Math.round(sug(b)/0.8)+' g miodu zamiast cukru':sug(b)+' g cukru')+', '+stOf(b)+' ml startera. Temperatura otoczenia około '+b.temp+' °C.\n\n'+
   'Co jest normalne: brązowe nitki i osad drożdży; mokra, kremowa, biała lub przezroczysta błona na powierzchni, także nierówna, pomarszczona, z bąblami powietrza lub dziurami; grzybek zatopiony lub ustawiony bokiem; ciemniejsze plamy wtopione w grzybek; mętny płyn.\n'+
   'Co oznacza pleśń i konieczność wyrzucenia: suche, puszyste, pudrowe lub włochate plamy leżące na powierzchni, zwykle okrągłe, białe, zielone, niebieskie lub czarne, o wyraźnym brzegu. Niepokoją też larwy owadów.\n\n'+
+  (window.MC_AI&&window.MC_AI.kombText?'Szczegółowa lista cech (baza wiedzy Magic Cafe):\n'+window.MC_AI.kombText+'\n\n':'')+
   'Zasady: opisuj tylko to, co naprawdę widać. Jeśli zdjęcie nie pokazuje kombuchy albo jest zbyt ciemne, nieostre lub zrobione z daleka, ustaw status "niejasne" i powiedz, jakie ujęcie zrobić. Jeśli widać cechy pleśni, ustaw "wyrzuc". Jeśli coś jest niejednoznaczne, ustaw "obserwuj" i powiedz, na co patrzeć przez kolejne 2 dni. Jeśli wszystko wygląda zdrowo, ustaw "ok" i dodaj jedną praktyczną wskazówkę dla tego etapu.\n\n'+
   'Odpowiedz wyłącznie jednym obiektem JSON, po polsku, zwięźle:\n{"status":"ok"|"obserwuj"|"wyrzuc"|"niejasne","tytul":"jedno krótkie zdanie","co_widze":["2–4 krótkie obserwacje"],"zalecenia":["1–3 konkretne kroki"],"pewnosc":"niska"|"srednia"|"wysoka"}';
 }
@@ -1775,6 +1818,7 @@ function runPhoto(){
   });
 }
 function initAI(){
+  if(window.MC_AI)window.MC_AI.knowledge().then(function(d){if(d&&d.kombText)window.MC_AI.kombText=d.kombText});
   if(!window.claude||!window.claude.use){photo.sample=false;photoUI();return}
   window.claude.use('sample').then(function(s){
     if(!s){photo.sample=false;photoUI();return}
@@ -1964,7 +2008,7 @@ function Stopwatch(box,cfg){
 function buildMethod(cfg){
   var v=$('#view-'+cfg.id),e=cfg.el={};
   function bump(d){var m=App.state[cfg.id],k=cfg.dose;m.dose=clamp(Math.round((m.dose+d*k.step)/k.step)*k.step,k.min,k.max);save();renderAll()}
-  e.bar=h('div',{class:'beanbar'});
+  e.bar=h('div',{class:'beanbar'});if(cfg.extraUI)cfg.extraUI(e);
   e.doseOut=h('output',{class:'num'});
   e.range=h('input',{type:'range',id:cfg.id+'-profile',min:'0',max:'100',step:'1'});
   e.range.addEventListener('input',function(){App.state[cfg.id].p=+e.range.value;renderMethod(cfg,true)});
@@ -1978,7 +2022,7 @@ function buildMethod(cfg){
   [
     h('section',{class:'sec'},head(cfg.eyebrow,cfg.title,cfg.lede),
       h('div',{class:'cols two'},
-        h('div',{class:'panel'},e.bar,
+        h('div',{class:'panel'},e.bar,e.extra||null,
           h('div',{class:'row',style:'justify-content:space-between'},h('span',{class:'label',text:cfg.dose.label}),
             h('div',{class:'stepper',role:'group','aria-label':cfg.dose.label},
               h('button',{type:'button','aria-label':'Mniej',text:'−',onclick:function(){bump(-1)}}),e.doseOut,
@@ -1993,12 +2037,13 @@ function buildMethod(cfg){
           cfg.sideNote?h('p',{class:'muted',style:'font-size:.88rem',text:cfg.sideNote}):null))),
     cfg.more?h('section',{class:'sec'},head(cfg.more.eyebrow,cfg.more.title),
       h('ul',{class:'morelist panel'},cfg.more.items.map(function(x){return h('li',null,h('b',{text:x[0]}),h('span',{text:x[1]}))}))):null,
+    cfg.id==='esp'||cfg.id==='v60'||cfg.id==='cold'||cfg.id==='batch'?grindCheck(cfg):null,
     h('section',{class:'sec'},head('Gdy coś idzie nie tak','Jak unikać błędów'),faq)].forEach(function(n){if(n)v.append(n)});
   if(!cfg.noSw)cfg.swObj=Stopwatch(e.sw,cfg);
 }
 function renderMethod(cfg,light){
   var st=App.state,m=st[cfg.id],r=cfg.last=cfg.compute(st,m),e=cfg.el;
-  if(!light)selBar(e.bar,cfg.id);
+  if(!light)selBar(e.bar,cfg.id);if(cfg.paintExtra)cfg.paintExtra(e);
   e.doseOut.textContent=r.doseText;e.range.value=m.p;e.pLabel.textContent=r.pText;
   e.params.textContent='';r.params.forEach(function(x){e.params.append(h('div',null,h('span',{text:x[0]}),h('b',{class:'num',text:x[1]})))});
   e.fit.hidden=!r.fit;if(r.fit){e.fit.className='note'+(r.fit.ok?' cool':'');e.fit.textContent=r.fit.text}
@@ -2008,6 +2053,133 @@ function renderMethod(cfg,light){
   e.side.hidden=!r.side;
   if(r.side){e.side.textContent='';e.side.append(h('span',{class:'bigfig num',text:r.side.big}),h('span',{text:r.side.text}))}
   if(cfg.swObj)cfg.swObj.paint();
+}
+
+var V60_RECIPES=[
+ {slug:'kasuya-46',name:'Metoda 4:6 – pięć lań',author:'Tetsu Kasuya',credential:'Mistrz Świata World Brewers Cup 2016',year:2016,source_url:'https://kurasu.kyoto/blogs/kurasu-journal/2016-world-brewers-cup-champion-tetsu-kasuya',is_default:true,dose_g:20,water_g:300,ratio:15,temp_c:92,temp2_c:null,grind_text:'Grubo: jak gruba sól morska, wyraźnie grubiej niż do klasycznego V60. Każde lanie ma zejść do sucha.',grind_microns:900,total_s:210,
+  pours:[{at:0,g:60,label:'Lanie 1 (słodycz/kwasowość)'},{at:45,g:60,label:'Lanie 2 (słodycz/kwasowość)'},{at:90,g:60,label:'Lanie 3 (moc)'},{at:135,g:60,label:'Lanie 4 (moc)'},{at:165,g:60,label:'Lanie 5 (moc)'},{at:210,g:0,label:'Koniec przelewu'}],
+  tips:['Czekaj, aż woda prawie zejdzie przed każdym laniem. Jeśli nie schodzi w 45 s – miel grubiej.','Lej spokojnie po spirali od środka, nie polewaj papieru.'],roast_fit:{light:2,medium:2,dark:1},proc_fit:{washed:2,natural:1,honey:1}},
+ {slug:'winton-5pour',name:'Pięć równych lań',author:'Matt Winton',credential:'Mistrz Świata World Brewers Cup 2021',year:2021,source_url:'https://honestcoffeeguide.com/brew-recipes/matt-winton-v60-five-pour/',dose_g:20,water_g:300,ratio:15,temp_c:93,temp2_c:88,grind_text:'Średnie, jak gruby piasek. Lej z wysokości, żeby woda mieszała złoże.',grind_microns:750,total_s:210,
+  pours:[{at:0,g:60,label:'Preinfuzja 93 °C – zwilż całość'},{at:45,g:60,label:'Lanie 2 – spirala od środka do brzegu i z powrotem'},{at:75,g:60,label:'Lanie 3'},{at:105,g:60,label:'Lanie 4 (woda już ok. 88 °C)'},{at:135,g:60,label:'Lanie 5'},{at:210,g:0,label:'Koniec przelewu'}],
+  tips:['Każde kolejne lanie po 30 s albo gdy złoże prawie wyschnie.','Dwie temperatury: 93 °C na preinfuzję, ok. 88 °C na ostatnie lania – zdejmij czajnik z podstawy po pierwszym laniu i nie dogrzewaj.','Lej z nieco większej wysokości niż zwykle – agitacja pomaga wyrównać ekstrakcję.','Za wolno i gorzko → grubiej. Za szybko i kwaśno/wodniście → drobniej.'],roast_fit:{light:2,medium:1,dark:0},proc_fit:{washed:2,natural:2,anaer:1}},
+ {slug:'medina-5x50',name:'Pięć lań po 50 g, 1:16',author:'Carlos Medina',credential:'Mistrz Świata World Brewers Cup 2023',year:2023,source_url:'https://www.slowpoursupply.co/pages/recipe-recap-carlos-medina-s-representing-chile-world-brewers-cup-champion-recipe',dose_g:15.5,water_g:250,ratio:16,temp_c:91,temp2_c:null,grind_text:'Średnie. Oryginał na Origami Air (szybki dripper); na V60 miel o stopień grubiej, żeby zmieścić się w 2:40.',grind_microns:700,total_s:160,
+  pours:[{at:0,g:50,label:'Lanie 1 – spirala na zewnątrz i do środka'},{at:40,g:50,label:'Lanie 2'},{at:70,g:50,label:'Lanie 3'},{at:100,g:50,label:'Lanie 4'},{at:130,g:50,label:'Lanie 5'},{at:160,g:0,label:'Koniec przelewu'}],
+  tips:['30 s ciszy między laniami – nie lej, nie mieszaj.','Woda miękka, ok. 65 ppm – w domu: filtrowana lub butelkowana o niskiej mineralizacji.','Niższa temperatura (91 °C) łagodzi kwasowość ziaren natural i eksperymentalnych fermentacji.'],roast_fit:{light:2,medium:1,dark:0},proc_fit:{natural:2,anaer:2,carbonic:2,washed:1}},
+ {slug:'woelfl-fast',name:'Szybki przelew 2:00, cztery lania',author:'Martin Wölfl',credential:'Mistrz Świata World Brewers Cup 2024',year:2024,source_url:'https://wild-kaffee.com/en/pages/filter-coffee-recipes-martin-woelfl',dose_g:17,water_g:270,ratio:16,temp_c:93,temp2_c:null,grind_text:'Ok. 630 µm – średnio-drobne. Oryginał na Orea V4 z filtrem Sibarist FAST; na V60 z papierem Hario licz raczej 2:30–2:45.',grind_microns:630,total_s:120,
+  pours:[{at:0,g:60,label:'Preinfuzja'},{at:30,g:60,label:'Lanie 2 – do 0:40'},{at:55,g:50,label:'Lanie 3 – do 1:20'},{at:85,g:100,label:'Lanie 4 – reszta, do 2:00'},{at:120,g:0,label:'Koniec przelewu'}],
+  tips:['Przepis na jasne, delikatne ziarno (Geisha). Przy średnim paleniu zejdź do 90–91 °C.','Krótki kontakt = dużo aromatu i klarowności, mało goryczy. Jeśli kawa jest cienka – zmiel drobniej, nie wydłużaj czasu.'],roast_fit:{light:3,medium:0,dark:-2},proc_fit:{washed:2,anaer:1}},
+ {slug:'peng-2temp',name:'Dwie temperatury, trzy lania',author:'George Jinyang Peng',credential:'Mistrz Świata World Brewers Cup 2025',year:2025,source_url:'https://honestcoffeeguide.com/brew-recipes/george-jinyang-peng-2025-wbc/',dose_g:15,water_g:210,ratio:14,temp_c:96,temp2_c:80,grind_text:'Średnio-drobne. Mocna proporcja 1:14 – kawa gęsta i słodka.',grind_microns:600,total_s:135,
+  pours:[{at:0,g:30,label:'Preinfuzja 96 °C – 3 delikatne kółka w 6 s'},{at:30,g:90,label:'Lanie 2, 96 °C – spirala w 10 s'},{at:70,g:90,label:'Lanie 3, 80 °C – najłagodniej jak się da'},{at:135,g:0,label:'Koniec przelewu'}],
+  tips:['Przed startem przepuść trochę gorącej wody przez dzióbek czajnika, żeby zimny metal nie schłodził preinfuzji.','Ostatnie lanie zimniejszą wodą (80 °C) – w domu: druga czajka albo dolej odrobinę zimnej wody do czajnika.','Pij dopiero po przestudzeniu do ok. 50–65 °C – wtedy pojawia się słodycz.'],roast_fit:{light:3,medium:1,dark:-1},proc_fit:{washed:2,natural:1}}
+];
+var GRIND_RULES={
+ v60:{target:'Średnio-drobny do średniego, równy, bez pyłu',reference:'między solą kuchenną a grubym piaskiem',microns:'600–900 µm',too_fine:'Przelew powyżej 4 min, kawa gorzka, cierpka, zatkany filtr, mętny napar',too_coarse:'Przelew poniżej 2 min, kawa kwaśna, cienka, wodnista, jasny napar',photo_tips:'Rozsyp szczyptę na białej kartce obok monety 1 zł, zdjęcie z góry z ok. 15 cm, dzienne światło, ostrość na ziarnach'},
+ esp:{target:'Drobny, jak mąka z odrobiną ziarnistości, zbija się po ściśnięciu',reference:'drobniej niż cukier puder, grubiej niż mąka',microns:'200–350 µm',too_fine:'Shot powyżej 35 s, kapie, gorzki, popiół; możliwe kanałowanie',too_coarse:'Shot poniżej 20 s, leci strumieniem, kwaśny, wodnisty, jasna crema',photo_tips:'Zdjęcie świeżo zmielonej kawy na białym tle z monetą obok; dodatkowo zdjęcie dna wyciśniętego puka'},
+ cold:{target:'Gruby, jednolity',reference:'gruba sól morska / gruby cukier kryształ',microns:'1000–1300 µm',too_fine:'Napar mętny, gorzki, mulisty osad, trudna filtracja',too_coarse:'Napar słaby, cienki, bez słodyczy mimo długiej maceracji',photo_tips:'Zdjęcie z góry na białej kartce z monetą dla skali'},
+ batch:{target:'Średni do średnio-grubego, zależnie od wielkości porcji',reference:'gruby piasek',microns:'800–1100 µm',too_fine:'Przelew wolny, przelanie koszyka, gorycz',too_coarse:'Przelew szybki, kawa cienka i kwaśna',photo_tips:'Zdjęcie z góry na białej kartce z monetą dla skali'}
+};
+var KB={loaded:false};
+function kbRecipes(){
+  var out=V60_RECIPES.slice(),db=(KB.data&&KB.data.recipes)||[];
+  db.filter(function(r){return r.method==='v60'}).forEach(function(r){var i=-1;out.forEach(function(x,j){if(x.slug===r.slug)i=j});if(i>=0)out[i]=r;else out.push(r)});
+  var L=App.state&&App.state.label,reco=L&&L.reco;
+  if(reco&&reco.method==='v60'&&reco.dose_g&&reco.water_g)out.unshift(roasterRecipe(reco,L));
+  out.push({slug:'magic3',name:'Klasyk Magic Cafe – trzy lania',author:'Magic Cafe',credential:'przepis domowy',classic:true});
+  return out;
+}
+function roasterRecipe(reco,L){
+  var w=reco.water_g,d=reco.dose_g,pours=Array.isArray(reco.pours)&&reco.pours.length?reco.pours:null;
+  if(!pours){var n=5,each=Math.round(w/n/5)*5,t=0,arr=[];for(var i=0;i<n;i++){arr.push({at:t,g:i<n-1?each:w-each*(n-1),label:i?'Lanie '+(i+1):'Preinfuzja'});t+=i?30:45}arr.push({at:reco.total_s||t+45,g:0,label:'Koniec przelewu'});pours=arr}
+  return {slug:'roaster',name:'Polecenie palarni'+(L.roaster?': '+L.roaster:''),author:L.roaster||'palarnia',credential:'z etykiety / strony palarni',dose_g:d,water_g:w,ratio:reco.ratio||Math.round(w/d*10)/10,temp_c:reco.temp_c||93,temp2_c:null,grind_text:reco.grind_text||'Według zaleceń palarni.',total_s:reco.total_s||pours[pours.length-1].at,pours:pours,tips:reco.text?[reco.text]:[],roaster:true};
+}
+function kbGrind(id){var g=KB.data&&KB.data.grind_rules,r=null;(g||[]).forEach(function(x){if(x.method===id)r=x});return r||GRIND_RULES[id]}
+function loadKB(){
+  if(!window.MC_AI||KB.loading)return;KB.loading=true;
+  window.MC_AI.knowledge().then(function(d){KB.loading=false;if(d&&d.recipes){KB.data=d;KB.loaded=true;if(App.started)renderAll()}});
+}
+var SWEET={sweet:['Słodsza','40 g + 80 g: mniej kwasu, więcej słodyczy'],bal:['Zbalansowana','60 g + 60 g: równowaga słodyczy i kwasowości'],bright:['Jaśniejsza','80 g + 40 g: więcej kwasowości i owocu']};
+
+/* ---------- Sprawdź mielenie ze zdjęcia (wspólne dla wszystkich metod) ---------- */
+var KAI={ready:false,sample:null,checked:false,cbs:[]};
+function kaiInit(){
+  if(KAI.checked)return;KAI.checked=true;
+  function done(){KAI.done=true;var c=KAI.cbs;KAI.cbs=[];c.forEach(function(f){f()})}
+  if(!window.claude||!window.claude.use){done();return}
+  window.claude.use('sample').then(function(s){
+    if(!s){done();return}
+    return s.limits().catch(function(){return null}).then(function(l){if(l&&l.images){KAI.sample=s;KAI.ready=true;KAI.remaining=l.remaining}done()});
+  }).catch(done);
+}
+var GC_ERR={not_granted:'Ocena zdjęć wymaga zgody na użycie Claude na tej stronie.',ai_off:'Ocena zdjęć jest jeszcze nieaktywna na tej stronie – brak klucza AI w Supabase.',rate_limited:'Limit ocen na dziś wyczerpany. Spróbuj jutro.',session_expired:'Sesja wygasła. Zaloguj się ponownie.',image_rejected:'Nie udało się odczytać tego zdjęcia. Wybierz inne, JPG lub PNG.',refused:'Tego zdjęcia nie mogę ocenić. Zrób inne ujęcie samej kawy.',invalid_json:'Odpowiedź przyszła w złym formacie. Spróbuj jeszcze raz.',images_unavailable:'W tym widoku nie można wysyłać zdjęć do oceny.'};
+var GC_VERD={za_drobno:['s-bad','Za drobno'],lekko_za_drobno:['s-warn','Trochę za drobno'],ok:['s-ok','Mielenie w punkt'],lekko_za_grubo:['s-warn','Trochę za grubo'],za_grubo:['s-bad','Za grubo'],niejasne:['','Nie widzę wyraźnie']};
+function shrink(file,cb,err){
+  if(!file||!/^image\//.test(file.type||'image/')){err('To nie wygląda na zdjęcie. Wybierz plik JPG lub PNG.');return}
+  var url=URL.createObjectURL(file),img=new Image();
+  img.onload=function(){
+    var k=Math.min(1,1600/Math.max(img.naturalWidth,img.naturalHeight)),c=document.createElement('canvas');
+    c.width=Math.round(img.naturalWidth*k);c.height=Math.round(img.naturalHeight*k);
+    c.getContext('2d').drawImage(img,0,0,c.width,c.height);
+    c.toBlob(function(blob){URL.revokeObjectURL(url);if(!blob){err('Nie udało się przygotować zdjęcia.');return}cb(blob)},'image/jpeg',.88);
+  };
+  img.onerror=function(){URL.revokeObjectURL(url);err('Przeglądarka nie potrafi otworzyć tego pliku. Zrób zdjęcie w formacie JPG.')};
+  img.src=url;
+}
+function grindPrompt(cfg){
+  var st=App.state,x=App.rp(st),R=x.R,P=x.P,g=kbGrind(cfg.id),r=cfg.last||{},rec=cfg.id==='v60'&&cfg.recipe?cfg.recipe(st.v60):null;
+  var ctx='Metoda: '+cfg.title+' ('+cfg.eyebrow+'). Parametry z aplikacji: '+(r.sum||'')+'. Ziarno: '+R.n.toLowerCase()+', '+P.n.toLowerCase()+'.'+(rec&&!rec.classic?' Przepis: '+rec.name+' ('+rec.author+'), zalecane mielenie: '+rec.grind_text:'');
+  return 'Jesteś doświadczonym baristą. Na zdjęciu jest zmielona kawa (najlepiej na białym tle, czasem z monetą lub linijką dla skali). Oceń, czy grubość i równość przemiału pasują do metody parzenia.\n'+
+  ctx+'\n'+
+  'Docelowy przemiał dla tej metody: '+g.target+' – wizualnie '+g.reference+(g.microns?' (ok. '+g.microns+')':'')+'. '+R.grind+'\n'+
+  'Objawy za drobnego przemiału: '+g.too_fine+'. Objawy za grubego: '+g.too_coarse+'.\n'+
+  'Zasady: opisuj tylko to, co naprawdę widać (wielkość cząstek względem obiektów odniesienia, udział pyłu, rozrzut wielkości, zbrylanie, połysk olejków). Jeśli zdjęcie jest nieostre, bez skali, zbyt ciemne albo nie pokazuje zmielonej kawy, ustaw "niejasne" i powiedz, jakie zdjęcie zrobić ('+g.photo_tips+'). Pamiętaj, że ocena ze zdjęcia jest przybliżona – zalecenia formułuj jako "o jeden-dwa kliki" w stronę grubiej/drobniej, a ostateczną korektę zawsze wiąż z czasem i smakiem naparu.\n'+
+  'Odpowiedz wyłącznie jednym obiektem JSON, po polsku, zwięźle:\n{"ocena":"za_drobno"|"lekko_za_drobno"|"ok"|"lekko_za_grubo"|"za_grubo"|"niejasne","tytul":"jedno krótkie zdanie","co_widze":["2–4 krótkie obserwacje"],"zalecenia":["1–3 konkretne kroki, np. zmiel o 2 kliki grubiej i sprawdź czas"],"rownosc":"równy"|"nierówny"|null,"pewnosc":"niska"|"srednia"|"wysoka"}';
+}
+function grindCheck(cfg){
+  var gc=cfg.gc={blob:null,url:null,busy:false,ctl:null},g=kbGrind(cfg.id);
+  var prev=h('img',{alt:'Podgląd zmielonej kawy',hidden:true}),empty=h('div',{class:'muted',text:'Tu pojawi się zdjęcie zmielonej kawy.'}),drop=h('div',{class:'drop'},empty,prev);
+  var cam=h('input',{type:'file',id:cfg.id+'-grind-camera',accept:'image/*',capture:'environment',hidden:true}),fil=h('input',{type:'file',id:cfg.id+'-grind-file',accept:'image/*',hidden:true});
+  var run=h('button',{class:'btn',type:'button',text:'Oceń mielenie',disabled:true}),stop=h('button',{class:'btn ghost',type:'button',text:'Przerwij',hidden:true}),hint=h('p',{class:'muted',role:'status','aria-live':'polite'}),out=h('div',{class:'verdict',hidden:true});
+  function ui(){run.disabled=!gc.blob||!KAI.ready||gc.busy;stop.hidden=!gc.busy;
+    if(!KAI.done)hint.textContent='Sprawdzam, czy ocena zdjęć jest dostępna…';
+    else if(!KAI.ready)hint.textContent=(window.MC_AI&&window.MC_AI.remote?'Ocena ze zdjęcia nieaktywna (brak klucza AI). ':'')+'Porównaj przemiał z opisem obok: '+g.reference+'.';
+    else if(!gc.blob)hint.textContent='Dodaj zdjęcie zmielonej kawy. '+g.photo_tips+'.';
+    else if(!gc.busy)hint.textContent='Zdjęcie gotowe. Ocena trwa zwykle 10–30 sekund.';
+  }
+  function set(f){shrink(f,function(blob){if(gc.url)URL.revokeObjectURL(gc.url);gc.blob=blob;gc.url=URL.createObjectURL(blob);prev.src=gc.url;prev.hidden=false;empty.hidden=true;out.hidden=true;ui()},function(t){hint.textContent=t})}
+  [cam,fil].forEach(function(i){i.addEventListener('change',function(ev){set(ev.target.files&&ev.target.files[0]);ev.target.value=''})});
+  ['dragenter','dragover'].forEach(function(n){drop.addEventListener(n,function(ev){ev.preventDefault();drop.classList.add('over')})});
+  ['dragleave','drop'].forEach(function(n){drop.addEventListener(n,function(ev){ev.preventDefault();drop.classList.remove('over')})});
+  drop.addEventListener('drop',function(ev){var f=ev.dataTransfer&&ev.dataTransfer.files&&ev.dataTransfer.files[0];if(f)set(f)});
+  function show(r){
+    out.textContent='';out.hidden=false;
+    var st=GC_VERD[r&&r.ocena]?r.ocena:'niejasne',m=GC_VERD[st],title=(r&&typeof r.tytul==='string'&&r.tytul)||m[1];
+    function strs(a,n){return Array.isArray(a)?a.filter(function(x){return typeof x==='string'&&x.trim()}).slice(0,n):[]}
+    var seen=strs(r&&r.co_widze,4),todo=strs(r&&r.zalecenia,3),conf={niska:'niska',srednia:'średnia',wysoka:'wysoka'}[r&&r.pewnosc];
+    out.append(h('span',{class:'pill '+m[0],text:m[1],style:'align-self:flex-start'}),h('h3',{text:title}),
+      r&&r.rownosc?h('p',{class:'muted',text:'Przemiał: '+r.rownosc}):null,
+      seen.length?h('div',null,h('p',{class:'eyebrow',text:'Co widać'}),h('ul',{class:'list'},seen.map(function(t){return h('li',{text:t})}))):null,
+      todo.length?h('div',null,h('p',{class:'eyebrow',text:'Co zrobić'}),h('ul',{class:'list'},todo.map(function(t){return h('li',{text:t})}))):null,
+      h('p',{class:'muted',style:'font-size:.86rem',text:(conf?'Pewność oceny: '+conf+'. ':'')+'Ocena ze zdjęcia jest przybliżona – ostatecznym sędzią jest czas przelewu i smak.'}));
+  }
+  run.addEventListener('click',function(){
+    if(!gc.blob||!KAI.ready||gc.busy)return;
+    gc.busy=true;gc.ctl=new AbortController();ui();hint.textContent='Oglądam przemiał…';
+    KAI.sample.json(grindPrompt(cfg),{images:[gc.blob],signal:gc.ctl.signal,mode:'grind'}).then(function(r){gc.busy=false;ui();show(r)}).catch(function(e){
+      gc.busy=false;var code=e&&e.code;
+      if(code==='not_granted'||code==='sampling_disabled'||code==='not_declared'||code==='capability_disabled'||code==='capability_removed'||code==='images_unavailable'){KAI.ready=false}
+      ui();if(code!=='cancelled')hint.textContent=GC_ERR[code]||(e&&e.message)||'Coś przerwało ocenę. Spróbuj ponownie za chwilę.';
+    });
+  });
+  stop.addEventListener('click',function(){if(gc.ctl)gc.ctl.abort()});
+  KAI.cbs.push(ui);kaiInit();ui();
+  return h('section',{class:'sec'},head('Mielenie','Sprawdź przemiał ze zdjęcia',
+      'Rozsyp szczyptę zmielonej kawy na białej kartce, połóż obok monetę i zrób zdjęcie z góry. Ocena mówi, czy przemiał pasuje do tej metody i w którą stronę kręcić młynkiem.'),
+    h('div',{class:'cols two'},
+      h('div',{class:'panel'},drop,h('div',{class:'row'},h('label',{class:'btn',for:cfg.id+'-grind-camera',text:'Zrób zdjęcie'}),h('label',{class:'btn ghost',for:cfg.id+'-grind-file',text:'Wybierz z galerii'}),cam,fil),
+        h('div',{class:'row'},run,stop),hint),
+      h('div',{class:'panel soft'},out,
+        h('p',{class:'eyebrow',text:'Jak czytać przemiał samemu'}),
+        h('dl',{class:'kv'},h('dt',{text:'Cel'}),h('dd',{text:g.target+(g.microns?' ('+g.microns+')':'')}),h('dt',{text:'Wygląda jak'}),h('dd',{text:g.reference}),h('dt',{text:'Za drobno'}),h('dd',{text:g.too_fine}),h('dt',{text:'Za grubo'}),h('dd',{text:g.too_coarse})))));
 }
 
 /* kompas smaku: suwak od niedoparzonej do przeparzonej i lista poprawek dla metody */
@@ -2052,12 +2224,12 @@ function start(){
   renderAll();
   var first=NSP?'':(location.hash||'').slice(1);
   if(App.tabs.indexOf(first)<0){try{first=localStorage.getItem(App.key+'-tab')}catch(e){first=null}}
-  go(first||App.tabs[0],true);
+  go(first||App.tabs[0],true);App.started=true;if(typeof loadKB==='function')loadKB();
 }
 
 (function(){
 App.key='aloha-kawa-v1';
-load({origin:'mix',roast:'medium',proc:'washed',label:{name:'',roaster:'',region:'',variety:'',alt:0,date:'',best:'',notes:'',use:'',decaf:false,robusta:false,note:'',read:0},esp:{dose:18,p:33},v60:{dose:15,p:30},cold:{dose:100,p:40},batch:{dose:1,p:35}});
+load({origin:'mix',roast:'medium',proc:'washed',label:{name:'',roaster:'',region:'',variety:'',alt:0,date:'',best:'',notes:'',use:'',decaf:false,robusta:false,note:'',read:0,reco:null},esp:{dose:18,p:33},v60:{dose:20,p:75,recipe:'kasuya-46',sweet:'bal'},cold:{dose:100,p:40},batch:{dose:1,p:35}});
 App.tabs=['ziarno','esp','v60','cold','batch','wiedza'];
 App.selectors=[
   {key:'origin',label:'Kraj',type:'select',groups:[['',[['mix','Mieszanka / nie wiem']]],
@@ -2142,7 +2314,7 @@ var ORIGIN={
 };
 Object.keys(ORIGIN).forEach(function(k){var x=ORIGIN[k];if(x.o)x.kv=[['Regiony',x.o[0]],['Wysokość',x.o[1]],['Typowa obróbka',x.o[2]],['W filiżance',x.o[3]],['Jak parzyć',x.o[4]]]});
 function tm(a,s,b,bo){return [['Kwasowość',a],['Słodycz',s],['Goryczka',b],['Body',bo]]}
-function rp(st){var R=ROAST[st.roast]||ROAST.medium,P=PROC[st.proc]||PROC.washed,O=ORIGIN[st.origin]||ORIGIN.mix;
+App.rp=rp;function rp(st){var R=ROAST[st.roast]||ROAST.medium,P=PROC[st.proc]||PROC.washed,O=ORIGIN[st.origin]||ORIGIN.mix;
   return {R:R,P:P,O:O,T:{A:R.A+P.A+O.A,S:R.S+P.S+O.S,B:R.B+(O.B||0),Bo:R.Bo+P.Bo+O.Bo}}}
 
 /* ---------- ESPRESSO ---------- */
@@ -2178,11 +2350,60 @@ var ESP={id:'esp',eyebrow:'Espresso',title:'Dawka, uzysk i czas',lede:'Trzy licz
     ['Każda filiżanka wychodzi inaczej',['Waż dawkę i uzysk za każdym razem. Rozgrzewaj ekspres tak samo długo i przepłukuj grupę przed parzeniem.']]]
 };
 
-/* ---------- V60 ---------- */
-var V60={id:'v60',eyebrow:'Hario V60',title:'Przelew ręczny',lede:'Najlepszy sposób, żeby usłyszeć, co ziarno ma do powiedzenia. Liczą się proporcja, temperatura i spokojne lanie.',
-  dose:{label:'Ile kawy',min:12,max:40,step:1},slider:{label:'Profil',left:'lekka, herbaciana',right:'pełna, intensywna'},
+/* ---------- V60: przepisy mistrzów World Brewers Cup ----------
+   Źródło prawdy: baza wiedzy w Supabase (magiccafe.recipes). Poniższa lista to kopia zapasowa,
+   używana gdy nie ma sieci. Gramatury skalują się do dawki, temperatura do ziarna. */
+var V60={id:'v60',eyebrow:'Hario V60',title:'Przelew ręczny',lede:'Przepisy mistrzów świata World Brewers Cup, przeliczone na Twoją dawkę i dopasowane do ziarna: temperatura do palenia i obróbki, mielenie do czasu przelewu.',
+  dose:{label:'Ile kawy',min:12,max:40,step:1},slider:{label:'Moc',left:'lekka, herbaciana',right:'pełna, intensywna'},
   sideNote:'Stoper da sygnał przy każdej zmianie etapu, więc możesz patrzeć na strumień wody, a nie na ekran.',
+  recipe:function(m){var all=kbRecipes(),r=null;all.forEach(function(x){if(x.slug===m.recipe)r=x});if(!r)all.forEach(function(x){if(x.is_default)r=x});return r||all[0]},
+  extraUI:function(e){e.extra=h('div',{class:'recipes'});return e.extra},
+  paintExtra:function(e){
+    var m=App.state.v60,all=kbRecipes(),cur=V60.recipe(m),box=e.extra;box.textContent='';
+    box.append(h('span',{class:'label',text:'Przepis'}));
+    var chips=h('div',{class:'chips',role:'group','aria-label':'Przepis'});
+    all.forEach(function(r){chips.append(h('button',{class:'chip',type:'button','aria-pressed':String(r.slug===cur.slug),text:(r.roaster?'★ ':'')+(r.classic?'Klasyk':r.author.split(' ').pop())+(r.year?' '+r.year:''),title:r.name,onclick:function(){m.recipe=r.slug;save();renderAll()}}))});
+    box.append(chips,h('p',{class:'muted',style:'font-size:.86rem;margin:4px 0 0',text:cur.name+' · '+cur.author+(cur.credential?' – '+cur.credential:'')}));
+    if(cur.slug==='kasuya-46'){
+      var sw=h('div',{class:'chips',role:'group','aria-label':'Smak'});
+      Object.keys(SWEET).forEach(function(k){sw.append(h('button',{class:'chip',type:'button','aria-pressed':String((m.sweet||'bal')===k),text:SWEET[k][0],title:SWEET[k][1],onclick:function(){m.sweet=k;save();renderAll()}}))});
+      box.append(h('span',{class:'label',style:'margin-top:8px',text:'Smak (pierwsze dwa lania)'}),sw);
+    }
+  },
   compute:function(st,m){
+    var rec=V60.recipe(m);
+    if(rec.classic)return V60.computeClassic(st,m);
+    var x=rp(st),R=x.R,P=x.P,O=x.O,T=x.T,p=m.p,d=m.dose,k=d/rec.dose_g,ratio=rec.ratio,w=Math.round(d*ratio/5)*5;
+    var shift=(R.v60-93)+P.t+O.den,temp=clamp(Math.round(rec.temp_c+shift),80,98),temp2=rec.temp2_c?clamp(Math.round(rec.temp2_c+shift),70,95):null;
+    var pours,end;
+    if(rec.slug==='kasuya-46'){
+      var s=m.sweet||'bal',f=s==='sweet'?[.4,.8]:s==='bright'?[.8,.4]:[.6,.6],a=w*.4,b=w*.6,r5=Math.round(a/1.2*f[0]/5)*5,r6=Math.round(a/1.2*f[1]/5)*5;
+      pours=[{at:0,g:r5,label:'Lanie 1 – '+SWEET[s][0].toLowerCase()},{at:45,g:r6,label:'Lanie 2'}];
+      if(p<35){pours.push({at:90,g:b,label:'Lanie 3 – cała reszta (lekka)'});end=180}
+      else if(p<70){var hb=Math.round(b/2/5)*5;pours.push({at:90,g:hb,label:'Lanie 3 (moc)'},{at:150,g:b-hb,label:'Lanie 4 (moc)'});end=200}
+      else{var tb=Math.round(b/3/5)*5;pours.push({at:90,g:tb,label:'Lanie 3 (moc)'},{at:135,g:tb,label:'Lanie 4 (moc)'},{at:165,g:b-2*tb,label:'Lanie 5 (moc)'});end=210}
+      end=Math.round((end+(d-20)*3)/5)*5;pours.push({at:end,g:0,label:'Koniec przelewu'});
+    }else{
+      pours=rec.pours.map(function(q){return {at:q.at,g:q.g?Math.round(q.g*k):0,label:q.label}});
+      var tot=0;pours.forEach(function(q){tot+=q.g});var last=null;pours.forEach(function(q){if(q.g)last=q});if(last)last.g+=w-tot;
+      end=Math.round((rec.total_s+(d-rec.dose_g)*3)/5)*5;pours[pours.length-1].at=end;
+    }
+    var n=pours.filter(function(q){return q.g>0}).length,cum=0,steps=['Zagotuj wodę. Cel to '+temp+' °C'+(temp2?' na pierwsze lania i ok. '+temp2+' °C na ostatnie':'')+'. Przepłucz papierowy filtr gorącą wodą i wylej ją z dzbanka.','Wsyp '+d+' g zmielonej kawy ('+rec.grind_text.split('.')[0].toLowerCase()+'), wyrównaj złoże.'];
+    var phases=pours.map(function(q){if(q.g){cum+=q.g;steps.push(fmtT(q.at)+'. '+q.label+': wlej '+q.g+' g, waga ma pokazać '+cum+' g.');return {at:q.at,label:q.label+': +'+q.g+' g → '+cum+' g'}}steps.push('Woda powinna zejść około '+fmtT(q.at)+', zostawiając płaskie złoże. Zamieszaj napar w dzbanku i daj mu minutę przestygnąć.');return {at:q.at,label:q.label}});
+    var hints=['Mielenie: '+rec.grind_text+' '+R.grind];
+    (rec.tips||[]).forEach(function(t){hints.push(t)});if(P.hint)hints.push(P.hint);if(O.hint)hints.push(O.hint);
+    if(d>rec.dose_g+5)hints.push('Porcja większa niż w oryginale ('+rec.dose_g+' g): miel o stopień grubiej, bo woda dłużej przechodzi przez kawę.');
+    var fit=(rec.roast_fit||{})[st.roast],fitTxt=fit>=2?'Ten przepis bardzo pasuje do '+R.n.toLowerCase()+'.':fit<=0?'Przepis powstał dla innego palenia niż '+R.n.toLowerCase()+' – temperaturę i mielenie już dopasowałem, ale lepiej sprawdzi się 4:6 albo Winton.':'Przepis pasuje do '+R.n.toLowerCase()+'.';
+    return {doseText:d+' g',pText:p<35?'lekka':p<70?'średnia':'pełna',sum:d+' g : '+w+' g · '+temp+' °C · '+n+' lań · '+fmtT(end),
+      params:[['Kawa',d+' g'],['Woda',w+' g'],['Proporcja','1:'+nf(ratio)],['Temperatura',temp+' °C'+(temp2?' → '+temp2+' °C':'')],['Lania',n],['Czas',fmtT(end-15)+'–'+fmtT(end+15)],['Mielenie',rec.grind_microns?'~'+rec.grind_microns+' µm':rec.grind_text.split(':')[0]]],
+      fit:{ok:fit==null||fit>=1,text:rec.author+' – '+rec.credential+'. '+fitTxt+(rec.source_url?' Źródło: '+rec.source_url.replace(/^https?:\/\//,'').split('/')[0]+'.':'')},
+      tTitle:rec.slug==='kasuya-46'?SWEET[m.sweet||'bal'][0]+', '+(p<35?'lekka':p<70?'średnia':'pełna'):rec.name,
+      taste:rec.slug==='kasuya-46'?SWEET[m.sweet||'bal'][1]+'. '+(p<35?'Jedno duże lanie na końcu: lekkie body, dużo klarowności.':p<70?'Dwa lania na końcu: średnie body.':'Trzy lania na końcu: pełne body, więcej słodyczy i mocy.'):(rec.tips&&rec.tips[0])||'',
+      meters:tm(T.A+(1-2*p/100)+(rec.temp2_c?.5:0),T.S-Math.abs(p-55)/100*3+(rec.slug==='kasuya-46'&&m.sweet==='sweet'?1:0),T.B-1+(2*p/100-1)*1.5,T.Bo-2+(2*p/100-1)*1.5),
+      hints:hints,steps:steps,phases:phases,
+      swStatus:function(s){return s>end+30?'Przelew trwa ponad '+fmtT(end+30)+'. Następnym razem zmiel grubiej.':''}};
+  },
+  computeClassic:function(st,m){
     var x=rp(st),R=x.R,P=x.P,O=x.O,T=x.T,p=m.p,d=m.dose,ratio=Math.round((17.5-p/100*3)*10)/10,w=Math.round(d*ratio/5)*5,bloom=d*3,mid=Math.round(w*.6/5)*5;
     var temp=Math.min(98,R.v60+P.t+O.den),end=Math.round((150+p*.45+(d-15)*3)/5)*5;
     return {doseText:d+' g',pText:'1:'+nf(ratio),sum:d+' g : '+w+' g · '+temp+' °C · '+fmtT(end),
@@ -2192,7 +2413,7 @@ var V60={id:'v60',eyebrow:'Hario V60',title:'Przelew ręczny',lede:'Najlepszy sp
       taste:p<30?'Dużo klarowności, delikatne body, wyraźne nuty owocowe i kwiatowe.':p<70?'Słodycz na pierwszym planie, czysta kwasowość, średnie body.':'Gęstsze body, więcej słodyczy i goryczki, mniej przejrzystości.',
       meters:tm(T.A+(1-2*p/100),T.S-Math.abs(p-55)/100*3,T.B-1+(2*p/100-1)*1.5,T.Bo-2+(2*p/100-1)*1.5),
       hints:['Mielenie: '+(p<35?'średnie, jak gruby piasek.':p<70?'średnio-drobne, jak sól kuchenna.':'średnio-drobne, o stopień drobniej niż zwykle.')+' '+R.grind,P.hint,O.hint,'Woda prosto z czajnika ma około 96–98 °C. Każda minuta z otwartą pokrywką to mniej więcej 2–3 °C mniej.','Przy większej porcji miel grubiej, bo woda dłużej przechodzi przez kawę.'],
-      steps:['Zagotuj wodę. Cel to '+temp+' °C. Przepłucz papierowy filtr gorącą wodą i wylej ją z dzbanka.','Wsyp '+d+' g zmielonej kawy, wyrównaj i zrób palcem mały dołek.','0:00. Wlej '+bloom+' g wody i zakręć dripperem, żeby zmoczyć całą kawę. Poczekaj do 0:45.','0:45. Lej spokojnie po spirali, aż waga pokaże '+mid+' g.','1:15. Dolej do '+w+' g, łagodnym strumieniem w środek.','Delikatnie zakręć dripperem. Woda powinna zejść około '+fmtT(end)+', zostawiając płaskie złoże.','Zamieszaj napar w dzbanku i daj mu minutę przestygnąć. Chłodniejsza kawa pokazuje więcej smaku.'],
+      steps:['Zagotuj wodę. Cel to '+temp+' °C. Przepłucz papierowy filtr gorącą wodą i wylej ją z dzbanka.','Wsyp '+d+' g zmielonej kawy, wyrównaj i zrób palcem mały dołek.','0:00. Wlej '+bloom+' g wody i zakręć dripperem, żeby zmoczyć całą kawę. Poczekaj do 0:45.','0:45. Lej spokojnie po spirali, aż waga pokaże '+mid+' g.','1:15. Dolej do '+w+' g, łagodnym strumieniem w środek.','Delikatnie zakręć dripperem. Woda powinna zejść około '+fmtT(end)+', zostawiając płaskie złoże.','Zamieszaj napar w dzbanku i daj mu minutę przestygnąć.'],
       phases:[{at:0,label:'Preinfuzja: wlej '+bloom+' g i zakręć'},{at:45,label:'Lej po spirali do '+mid+' g'},{at:75,label:'Dolej do '+w+' g'},{at:105,label:'Zakręć dripperem i czekaj'},{at:end,label:'Koniec przelewu'}],
       swStatus:function(s){return s>end+30?'Przelew trwa ponad '+fmtT(end+30)+'. Następnym razem zmiel grubiej.':''}};
   },
@@ -2304,7 +2525,7 @@ App.extras.push(renderHome);
 
 /* ---------- ETYKIETA: zdjęcie paczki, odczyt i przepis ---------- */
 var LAB={blob:null,url:null,busy:false,ready:false,sample:null,ctl:null,res:null};
-var LAB_ERR={not_granted:'Odczyt etykiety wymaga Twojej zgody na użycie Claude na tej stronie. Możesz też wpisać dane ręcznie poniżej.',rate_limited:'Za dużo zapytań naraz. Spróbuj ponownie za chwilę.',session_expired:'Sesja wygasła. Zaloguj się ponownie do Claude.',image_rejected:'Nie udało się odczytać tego zdjęcia. Wybierz inne, w formacie JPG lub PNG.',refused:'Tego zdjęcia nie mogę odczytać. Zrób inne ujęcie samej etykiety.',invalid_json:'Odpowiedź przyszła w złym formacie. Spróbuj jeszcze raz.',images_unavailable:'W tym widoku nie można wysyłać zdjęć. Wpisz dane z etykiety ręcznie.',too_large:'Zdjęcie jest za duże. Zrób je ponownie w niższej rozdzielczości.'};
+var LAB_ERR={ai_off:'Odczyt etykiety jest jeszcze nieaktywny na tej stronie (brak klucza AI). Wpisz dane ręcznie poniżej.',not_granted:'Odczyt etykiety wymaga Twojej zgody na użycie Claude na tej stronie. Możesz też wpisać dane ręcznie poniżej.',rate_limited:'Za dużo zapytań naraz. Spróbuj ponownie za chwilę.',session_expired:'Sesja wygasła. Zaloguj się ponownie do Claude.',image_rejected:'Nie udało się odczytać tego zdjęcia. Wybierz inne, w formacie JPG lub PNG.',refused:'Tego zdjęcia nie mogę odczytać. Zrób inne ujęcie samej etykiety.',invalid_json:'Odpowiedź przyszła w złym formacie. Spróbuj jeszcze raz.',images_unavailable:'W tym widoku nie można wysyłać zdjęć. Wpisz dane z etykiety ręcznie.',too_large:'Zdjęcie jest za duże. Zrób je ponownie w niższej rozdzielczości.'};
 var ORIGIN_KEYS=Object.keys(ORIGIN).filter(function(k){return k!=='mix'});
 function labHint(t){$('#label-hint').textContent=t}
 function labUI(){
@@ -2342,7 +2563,8 @@ function labPrompt(){
   'Kody obróbki: '+pc+'. Myta po angielsku to washed lub fully washed; natural to dry process; anaerobowa to anaerobic; kofermentacja to co-fermented lub infused; wet-hulled to giling basah.\n'+
   'Palenie: "light" (jasne, filter roast, omniroast, light, nordic), "medium" (średnie, medium, espresso roast bez słowa dark), "dark" (ciemne, dark, italian, french). Jeśli etykieta mówi tylko "do espresso", wpisz "medium"; jeśli "do przelewu" lub "filter", wpisz "light".\n'+
   'Daty podaj w formacie RRRR-MM-DD. Polskie etykiety piszą zwykle "data palenia" lub "palona"; angielskie "roasted on" lub "roast date". Datę ważności ("najlepiej spożyć przed", "best before") wpisz do "waznosc", nie do "data_palenia".\n'+
-  'Odpowiedz wyłącznie jednym obiektem JSON:\n{"jest_etykieta":true|false,"nazwa":"nazwa kawy lub null","palarnia":"nazwa palarni lub null","kraj":"kod z listy lub null","kraj_inny":"string lub null","mieszanka":true|false,"region":"string lub null","farma":"string lub null","odmiana":"string lub null","wysokosc_m":liczba lub null,"obrobka":"kod z listy lub null","palenie":"light"|"medium"|"dark"|null,"data_palenia":"RRRR-MM-DD lub null","waznosc":"RRRR-MM-DD lub null","nuty":["do 5 krótkich nut smakowych po polsku"],"przeznaczenie":"espresso"|"przelew"|"uniwersalna"|null,"bezkofeinowa":true|false,"robusta":true|false,"uwagi":"jedno zdanie po polsku, jeśli coś jest niejasne, inaczej null"}';
+  'Odpowiedz wyłącznie jednym obiektem JSON:\n{"jest_etykieta":true|false,"nazwa":"nazwa kawy lub null","palarnia":"nazwa palarni lub null","kraj":"kod z listy lub null","kraj_inny":"string lub null","mieszanka":true|false,"region":"string lub null","farma":"string lub null","odmiana":"string lub null","wysokosc_m":liczba lub null,"obrobka":"kod z listy lub null","palenie":"light"|"medium"|"dark"|null,"data_palenia":"RRRR-MM-DD lub null","waznosc":"RRRR-MM-DD lub null","nuty":["do 5 krótkich nut smakowych po polsku"],"przeznaczenie":"espresso"|"przelew"|"uniwersalna"|null,"bezkofeinowa":true|false,"robusta":true|false,"uwagi":"jedno zdanie po polsku, jeśli coś jest niejasne, inaczej null","przepis_palarni":null lub {"metoda":"v60"|"esp"|"cold"|"batch","kawa_g":liczba lub null,"woda_g":liczba lub null,"temp_c":liczba lub null,"czas_s":liczba sekund lub null,"mielenie":"string lub null","opis":"zalecenie palarni w jednym zdaniu po polsku"}}\n'+
+  'Pole "przepis_palarni" wypełnij tylko wtedy, gdy palarnia podaje na etykiecie zalecenie parzenia (np. "18 g / 300 g / 93 °C", "przelew 1:16", "espresso 18 g → 40 g w 28 s"). Przelew, dripper, filter, pour-over = "v60"; espresso = "esp"; cold brew = "cold"; ekspres przelewowy = "batch". Nie wymyślaj zaleceń, których nie ma.';
 }
 function labRun(){
   if(!LAB.blob||!LAB.ready||LAB.busy)return;
@@ -2358,6 +2580,13 @@ function labRun(){
 }
 function str(v,n){return typeof v==='string'&&v.trim()?v.trim().slice(0,n||80):''}
 function isoDate(v){return /^\d{4}-\d{2}-\d{2}$/.test(str(v))&&!isNaN(new Date(v).getTime())?v:''}
+function labReco(p){
+  if(!p||typeof p!=='object')return null;var meth={v60:'v60',esp:'esp',cold:'cold',batch:'batch'}[p.metoda];if(!meth)return null;
+  var num=function(v,a,b){return typeof v==='number'&&v>=a&&v<=b?v:null};
+  var o={method:meth,dose_g:num(p.kawa_g,5,300),water_g:num(p.woda_g,20,3000),temp_c:num(p.temp_c,60,100),total_s:num(p.czas_s,10,3600),grind_text:str(p.mielenie,120),text:str(p.opis,200),pours:Array.isArray(p.pours)?p.pours:null};
+  if(o.dose_g&&o.water_g)o.ratio=Math.round(o.water_g/o.dose_g*10)/10;
+  return o.text||o.dose_g?o:null;
+}
 function labApply(r){
   if(!r||typeof r!=='object'||r.jest_etykieta===false){labHint('Na zdjęciu nie widzę etykiety kawy. Zrób zdjęcie z bliska, tak aby tekst dało się przeczytać.');return}
   var st=App.state,L=st.label,ch=[];
@@ -2371,6 +2600,8 @@ function labApply(r){
   L.notes=Array.isArray(r.nuty)?r.nuty.filter(function(x){return typeof x==='string'&&x.trim()}).slice(0,5).join(', ').slice(0,120):'';
   L.use=r.przeznaczenie==='espresso'||r.przeznaczenie==='przelew'||r.przeznaczenie==='uniwersalna'?r.przeznaczenie:'';
   L.decaf=!!r.bezkofeinowa;L.robusta=!!r.robusta;L.note=str(r.uwagi,160);L.read=Date.now();
+  L.reco=labReco(r.przepis_palarni);if(L.reco&&L.reco.method==='v60')st.v60.recipe='roaster';
+  if(!L.reco&&L.roaster&&window.MC_AI)window.MC_AI.roaster(L.roaster).then(function(rows){var v=rows.filter(function(q){return q.method==='v60'})[0]||rows[0];if(v&&!App.state.label.reco){App.state.label.reco=labReco({metoda:v.method,kawa_g:v.dose_g,woda_g:v.water_g,temp_c:v.temp_c,czas_s:v.total_s,mielenie:v.grind_text,opis:v.notes||('Przepis palarni '+v.roaster+(v.coffee?' dla '+v.coffee:'')),pours:v.pours});if(App.state.label.reco.method==='v60')App.state.v60.recipe='roaster';save();renderAll()}});
   if(L.date)ch.push('data palenia: '+L.date);
   LAB.inputsSynced=false;save();renderAll();
   labHint(ch.length?'Odczytane i ustawione: '+ch.join('; ')+'.':'Etykietę odczytałem, ale nie było na niej kraju, palenia ani obróbki. Ustaw je u góry strony.');
@@ -2413,6 +2644,7 @@ function renderLabel(){
   var A=L.alt?Math.max(600,Math.min(2200,L.alt)):0;
   var tips=[];
   tips.push('Metoda: '+m[0]+'. '+MWHY[best]+' Druga w kolejności: '+alt[0]+'.');
+  if(L.reco){tips.unshift('Polecenie palarni ('+(MNAME[L.reco.method]||MNAME.v60)[0]+'): '+[L.reco.dose_g?L.reco.dose_g+' g kawy':'',L.reco.water_g?L.reco.water_g+' g wody':'',L.reco.temp_c?L.reco.temp_c+' °C':'',L.reco.total_s?fmtT(L.reco.total_s):'',L.reco.grind_text||''].filter(Boolean).join(', ')+(L.reco.text?'. '+L.reco.text:'')+(L.reco.method==='v60'?' Przepis dostępny w V60 jako „Polecenie palarni”.':''))}
   tips.push('Parametry: '+m[1].last.sum+'.');
   tips.push('Mielenie: '+(best==='esp'?'bardzo drobne.':best==='cold'?'grube.':best==='v60'?'średnio-drobne.':'średnie.')+' '+R.grind);
   if(P.hint)tips.push(P.hint);if(O.hint)tips.push(O.hint);
