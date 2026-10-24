@@ -489,12 +489,48 @@ input[type=text],input[type=number],input[type=date],select,textarea{border:2px 
 .suite-in .brand{margin-inline-end:auto}
 @media (max-width:620px){ .suite-in .brand{flex:1 1 auto} }
 </style>
+<style>
+/* karta nastawu, dziennik, historia, kopia, pytania */
+.kvgrid{display:grid;grid-template-columns:auto minmax(0,1fr);gap:7px 16px;margin:0}
+.kvgrid dt{color:var(--muted);font-size:.9rem}.kvgrid dd{margin:0;font-weight:600;overflow-wrap:anywhere}
+.formgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(9.5em,1fr));gap:12px}
+.card-form{display:flex;flex-direction:column;gap:12px}
+.evlist{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
+.evlist li{display:grid;grid-template-columns:8.5em minmax(0,1fr);gap:10px;align-items:baseline}
+.cal-actions{display:flex;flex-direction:column;gap:10px;align-items:flex-start}
+.cal-actions details summary{cursor:pointer;font-size:.9rem;font-weight:600}
+.cal-actions a{color:var(--lagoon);font-weight:600}
+.log li.k-change .what{color:var(--warn)}.log li.k-start .what,.log li.k-bottled .what{font-weight:600}
+.hist{border-bottom:1px solid var(--line)}.hist:last-child{border-bottom:0}
+.hist>summary{cursor:pointer;list-style:none;display:flex;gap:12px;align-items:center;padding:12px 0}
+.hist>summary::-webkit-details-marker{display:none}
+.hist>summary .when{flex:none;width:5.6em;color:var(--muted);font-size:.84rem}.hist>summary .what{flex:1;min-width:0}
+.hist .hb{padding:0 0 18px;display:flex;flex-direction:column;gap:12px}
+.codebox{font-family:ui-monospace,"SFMono-Regular",Menlo,monospace;font-size:1.1rem;letter-spacing:.08em;padding:10px 12px;border:2px dashed var(--ink);border-radius:var(--r-sm);user-select:all;word-break:break-all;background:var(--surface)}
+.qa-top{display:flex;flex-direction:column;gap:12px}
+.qa-search{position:relative}
+.qa-search input{width:100%;font-size:1.05rem;padding:14px 14px;min-height:52px;background:var(--surface);border:2px solid var(--ink);border-radius:var(--r-sm)}
+.qa-chips{display:flex;flex-wrap:wrap;gap:8px}
+.qa-quick{display:flex;flex-wrap:wrap;gap:6px}
+.qa-quick button{border:1.5px dashed var(--line);background:transparent;border-radius:999px;padding:6px 12px;font-size:.86rem}
+.qa-count{font-size:.86rem;color:var(--muted)}
+.qa-group h3{margin:6px 0 4px}
+.qa .faq summary{display:flex;flex-direction:column;gap:2px;list-style:none;margin-left:0}
+.qa .faq summary::-webkit-details-marker{display:none}
+.qa .faq summary .qa-meta{font-weight:400;font-size:.78rem;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+.qa .faq summary .qa-q::before{content:"▸ ";color:var(--hibiscus)}
+.qa .faq[open] summary .qa-q::before{content:"▾ "}
+.qa-src{font-size:.82rem;color:var(--muted)}.qa-src a{color:var(--lagoon)}
+.qa mark{background:var(--mango-soft);color:inherit;border-radius:3px;padding:0 2px}
+.qa-ai{display:flex;flex-direction:column;gap:10px}
+.qa-ai .ans{white-space:pre-wrap}
+</style>
 </head>
 <body>
 <div class="splash" id="splash" role="button" tabindex="0" aria-label="Magic Cafe. Wypożyczalnia napojów i dobrych momentów. Dotknij, aby wejść."><div class="sign sp-sign" aria-hidden="true"><svg class="sign-sq" viewBox="0 0 200 200" aria-hidden="true"><defs><linearGradient id="sp-a" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#FFFFFF"/><stop offset=".5" stop-color="#FFF7B8"/><stop offset="1" stop-color="#F2D94A"/></linearGradient></defs><rect width="200" height="200" fill="#2A2F96"/><polygon points="26.0,25.0 28.2,31.8 35.0,34.0 28.2,36.2 26.0,43.0 23.8,36.2 17.0,34.0 23.8,31.8" fill="#3DDC84"/><polygon points="170.0,23.0 171.7,28.3 177.0,30.0 171.7,31.7 170.0,37.0 168.3,31.7 163.0,30.0 168.3,28.3" fill="#3FD0FF"/><polygon points="40.0,161.0 41.7,166.3 47.0,168.0 41.7,169.7 40.0,175.0 38.3,169.7 33.0,168.0 38.3,166.3" fill="#3FD0FF"/><polygon points="166.0,150.0 168.4,157.6 176.0,160.0 168.4,162.4 166.0,170.0 163.6,162.4 156.0,160.0 163.6,157.6" fill="#3DDC84"/><polygon points="150.0,66.0 151.0,69.0 154.0,70.0 151.0,71.0 150.0,74.0 149.0,71.0 146.0,70.0 149.0,69.0" fill="#3DDC84"/><polygon points="58.0,136.0 59.0,139.0 62.0,140.0 59.0,141.0 58.0,144.0 57.0,141.0 54.0,140.0 57.0,139.0" fill="#3FD0FF"/><text x="100" y="119" text-anchor="middle" transform="rotate(-22 100 100)" font-family="'Bowlby One','Anton',Impact,sans-serif" font-size="52" fill="url(#sp-a)" stroke="#0A0B2E" stroke-width="5" paint-order="stroke" stroke-linejoin="round" textLength="178" lengthAdjust="spacingAndGlyphs">MAGIC</text></svg><div class="sign-panel"><span class="l1">Wypożyczalnia napojów</span><span class="l2">i dobrych momentów</span></div><svg class="sign-sq right" viewBox="0 0 200 200" aria-hidden="true"><defs><linearGradient id="sp-b" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#FFFFFF"/><stop offset=".5" stop-color="#FFF7B8"/><stop offset="1" stop-color="#F2D94A"/></linearGradient></defs><rect width="200" height="200" fill="#2A2F96"/><polygon points="30.0,22.0 31.9,28.1 38.0,30.0 31.9,31.9 30.0,38.0 28.1,31.9 22.0,30.0 28.1,28.1" fill="#3FD0FF"/><polygon points="168.0,31.0 170.2,37.8 177.0,40.0 170.2,42.2 168.0,49.0 165.8,42.2 159.0,40.0 165.8,37.8" fill="#3DDC84"/><polygon points="36.0,151.0 38.2,157.8 45.0,160.0 38.2,162.2 36.0,169.0 33.8,162.2 27.0,160.0 33.8,157.8" fill="#3DDC84"/><polygon points="170.0,159.0 171.7,164.3 177.0,166.0 171.7,167.7 170.0,173.0 168.3,167.7 163.0,166.0 168.3,164.3" fill="#3FD0FF"/><polygon points="60.0,56.0 61.0,59.0 64.0,60.0 61.0,61.0 60.0,64.0 59.0,61.0 56.0,60.0 59.0,59.0" fill="#3DDC84"/><polygon points="140.0,146.0 141.0,149.0 144.0,150.0 141.0,151.0 140.0,154.0 139.0,151.0 136.0,150.0 139.0,149.0" fill="#3FD0FF"/><text x="100" y="119" text-anchor="middle" transform="rotate(-22 100 100)" font-family="'Bowlby One','Anton',Impact,sans-serif" font-size="52" fill="url(#sp-b)" stroke="#0A0B2E" stroke-width="5" paint-order="stroke" stroke-linejoin="round" textLength="150" lengthAdjust="spacingAndGlyphs">CAFE</text></svg></div><div class="sp-play" aria-hidden="true">▶ Play</div><div class="sp-hint" aria-hidden="true">Dotknij, aby wejść</div></div>
 <header class="suite-top"><div class="suite-in">
   <div class="brand"><svg class="mini" viewBox="0 0 64 40" aria-hidden="true"><defs><linearGradient id="mg-mini" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#FFFFFF"/><stop offset="1" stop-color="#F2D94A"/></linearGradient></defs><rect width="64" height="40" fill="#2A2F96"/><polygon points="8.0,4.0 9.0,7.0 12.0,8.0 9.0,9.0 8.0,12.0 7.0,9.0 4.0,8.0 7.0,7.0" fill="#3DDC84"/><polygon points="56.0,28.0 57.0,31.0 60.0,32.0 57.0,33.0 56.0,36.0 55.0,33.0 52.0,32.0 55.0,31.0" fill="#3FD0FF"/><text x="32" y="26.5" text-anchor="middle" transform="rotate(-10 32 20)" font-family="'Bowlby One','Anton',Impact,sans-serif" font-size="16" fill="url(#mg-mini)" stroke="#0A0B2E" stroke-width="2" paint-order="stroke" textLength="54" lengthAdjust="spacingAndGlyphs">MAGIC</text></svg><span>Magic Cafe</span></div><button type="button" class="fs-btn" id="fs-btn" aria-label="Pełny ekran" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg></button>
-  <div class="seg" id="suite-seg" role="group" aria-label="Dział"><button type="button" data-app="store">Półki</button><button type="button" data-app="kombucha">Kombucha</button><button type="button" data-app="kawa">Kawa</button><button type="button" data-app="matcha">Matcha</button><button type="button" data-app="bar">Shaki</button></div>
+  <div class="seg" id="suite-seg" role="group" aria-label="Dział"><button type="button" data-app="store">Półki</button><button type="button" data-app="kombucha">Kombucha</button><button type="button" data-app="kawa">Kawa</button><button type="button" data-app="matcha">Matcha</button><button type="button" data-app="bar">Shaki</button><button type="button" data-app="pytania">Pytania</button></div>
 </div></header>
 <div class="rainbow" aria-hidden="true"></div>
 <main class="store" id="store"><div class="store-in">
@@ -549,9 +585,17 @@ input[type=text],input[type=number],input[type=date],select,textarea{border:2px 
       </figure>
     </section>
 
+    <section class="sec" id="card-sec" hidden>
+      <div class="sec-head"><p class="eyebrow">Twój nastaw</p><h2>Karta nastawu i dziennik</h2>
+        <p class="muted">Parametry zapisują się w chwili startu fermentacji i nie zmieniają się od suwaków. Każda poprawka karty trafia do dziennika z datą.</p></div>
+      <div class="cols two"><div class="panel" id="card-box"></div><div class="panel soft" id="cal-box"></div></div>
+      <div class="panel" id="diary-box" style="margin-top:16px"></div>
+    </section>
+
     <section class="sec" id="taste-sec">
       <div class="sec-head"><p class="eyebrow">Pole smaku</p><h2>Ile cukru, taki efekt</h2>
         <p class="muted">Ustaw cukier i przesuń dzień, żeby zobaczyć, jak zmienia się smak. Składniki poniżej przeliczą się same.</p></div>
+      <div class="note lock-note" id="lock-note" hidden></div>
       <div class="cols two">
         <div class="panel">
           <div class="row" style="justify-content:space-between">
@@ -581,6 +625,7 @@ input[type=text],input[type=number],input[type=date],select,textarea{border:2px 
 
     <section class="sec">
       <div class="sec-head"><p class="eyebrow" id="ing-eyebrow">Przepis klasyczny</p><h2>Składniki</h2></div>
+      <div class="note lock-note" id="lock-note2" hidden></div>
       <div class="cols two">
         <div class="panel">
           <div class="row" style="justify-content:space-between">
@@ -621,8 +666,14 @@ input[type=text],input[type=number],input[type=date],select,textarea{border:2px 
     </section>
 
     <section class="sec" id="history-sec" hidden>
-      <div class="sec-head"><p class="eyebrow">Dziennik</p><h2>Poprzednie nastawy</h2></div>
-      <ul class="log panel" id="history"></ul>
+      <div class="sec-head"><p class="eyebrow">Dziennik</p><h2>Poprzednie nastawy</h2><p class="muted">Rozwiń nastaw, żeby zobaczyć kartę, degustacje i wszystkie zmiany.</p></div>
+      <div class="panel" id="history"></div>
+    </section>
+
+    <section class="sec" id="backup-sec">
+      <div class="sec-head"><p class="eyebrow">Bezpieczeństwo danych</p><h2>Kopia zapasowa</h2>
+        <p class="muted">Nastawy, dziennik i ustawienia całej aplikacji są zapisane w tej przeglądarce. Wyczyszczenie danych przeglądarki je usuwa, dlatego warto mieć kopię.</p></div>
+      <div class="cols two"><div class="panel" id="backup-local"></div><div class="panel soft" id="backup-cloud"></div></div>
     </section>
   </main>
 
@@ -1074,6 +1125,22 @@ input[type=text],input[type=number],input[type=date],select,textarea{border:2px 
   </footer>
 </div>
 </div>
+<div class="app qa" id="app-pytania" hidden><div class="wrap">
+  <main class="view">
+    <section class="sec">
+      <div class="sec-head"><p class="eyebrow">Baza wiedzy Magic Cafe</p><h2>Pytania i odpowiedzi</h2>
+        <p class="muted" id="qa-lede">Kombucha, kawa, matcha, soki, shoty i inne domowe napoje. Odpowiedzi zebrane z badań, poradników i forów piwowarów, ze źródłami.</p></div>
+      <div class="qa-top">
+        <div class="field qa-search"><label for="qa-q" class="sr">Szukaj</label><input type="search" id="qa-q" placeholder="Np. jak przechować grzybek, kawa kwaśna, matcha grudki" autocomplete="off" enterkeyhint="search"></div>
+        <div class="qa-chips" id="qa-chips" role="group" aria-label="Napój"></div>
+        <div class="qa-quick" id="qa-quick"></div>
+        <p class="qa-count" id="qa-count" aria-live="polite"></p>
+      </div>
+    </section>
+    <section class="sec"><div class="panel" id="qa-list"></div></section>
+    <section class="sec" id="qa-ai-sec" hidden><div class="panel soft qa-ai" id="qa-ai"></div></section>
+  </main>
+</div></div>
 <div class="app" id="app-bar" data-prefixed hidden><div class="wrap">
   <header class="top">
     <div class="brand">
@@ -1214,7 +1281,7 @@ window.MC_AI=(function(){
     return knowP;
   }
   function roaster(name){return name?post({action:'roaster',roaster:name}).then(function(j){return j.recipes||[]}).catch(function(){return []}):Promise.resolve([])}
-  return {sample:sample,knowledge:knowledge,roaster:roaster,url:URL_,remote:true};
+  return {sample:sample,knowledge:knowledge,roaster:roaster,url:URL_,remote:true,post:post};
 })();
 if(!window.claude||!window.claude.use){
   window.claude={use:function(name){return Promise.resolve(name==='sample'?window.MC_AI.sample:null)},_magiccafe:true};
@@ -1250,7 +1317,7 @@ function fd(d){return DF.format(d)}
 
 /* ---------- stan ---------- */
 var LS='aloha-kombucha-v1';
-function newBatch(prev){return {id:Date.now().toString(36),litres:prev?prev.litres:1,tea:prev?prev.tea:'mix',temp:prev?prev.temp:23,sweet:prev&&prev.sweet||'sugar',sugar:prev&&prev.sugar||50,starter:prev&&prev.starter||200,step:0,checks:{},startedAt:null,log:[]}}
+function newBatch(prev){return {id:Date.now().toString(36),litres:prev?prev.litres:1,tea:prev?prev.tea:'mix',temp:prev?prev.temp:23,sweet:prev&&prev.sweet||'sugar',sugar:prev&&prev.sugar||50,starter:prev&&prev.starter||200,step:0,checks:{},startedAt:null,log:[],rec:null,bottledAt:null,f2Days:3}}
 function fresh(){return {v:1,updatedAt:0,batch:newBatch(),history:[]}}
 function valid(s){return s&&s.v===1&&s.batch&&Array.isArray(s.history)&&Array.isArray(s.batch.log)}
 function loadLocal(){try{var s=JSON.parse(localStorage.getItem(LS));if(valid(s))return s}catch(e){}return fresh()}
@@ -1258,12 +1325,142 @@ function migrate(s){
   var b=s.batch,ch=false;
   if(!s.d2){s.d2=1;ch=true;if(!b.startedAt){if(!b.sugar)b.sugar=50;}}
   if(!s.d3){s.d3=1;ch=true;if(!b.starter){var S=Math.round(+b.sugar)||50;b.starter=(S<50||b.sweet==='honey')?150:100}}
+  if(!s.d4){s.d4=1;ch=true;if(b.startedAt&&!b.rec){b.rec=params(b);b.rec.at=Date.now();b.rec.recon=true}if(b.f2Days==null)b.f2Days=3}
   return ch;
 }
 var state=loadLocal();
 if(migrate(state)){state.updatedAt=Date.now();try{localStorage.setItem(LS,JSON.stringify(state))}catch(e){}}
-var ui={open:null,confirm:null,filter:'all',day:null};
-function save(){state.updatedAt=Date.now();try{localStorage.setItem(LS,JSON.stringify(state))}catch(e){}queueRemote()}
+var ui={open:null,confirm:null,filter:'all',day:null,edit:false};
+function save(){state.updatedAt=Date.now();try{localStorage.setItem(LS,JSON.stringify(state))}catch(e){}queueRemote();if(window.MC_BACKUP)window.MC_BACKUP.soon()}
+/* ---------- karta nastawu, dziennik zmian, kalendarz ---------- */
+var PKEYS=['litres','tea','sweet','sugar','starter','temp'];
+var PLAB={litres:'Objętość',tea:'Herbata',sweet:'Słodzik',sugar:'Cukier na litr',starter:'Starter na litr',temp:'Temperatura',date:'Data nastawu'};
+function params(b){return {litres:+b.litres||1,tea:b.tea||'mix',sweet:b.sweet==='honey'?'honey':'sugar',sugar:sug(b),starter:stOf(b),temp:+b.temp||23}}
+function cur(b){b=b||state.batch;if(!(b.startedAt&&b.rec))return b;var o={},k;for(k in b)o[k]=b[k];PKEYS.forEach(function(x){o[x]=b.rec[x]});return o}
+function pv(k,v){return k==='litres'?nf(v)+' l':k==='tea'?(TEAS[v]?TEAS[v].n:String(v)):k==='sweet'?(v==='honey'?'miód':'cukier'):k==='sugar'?v+' g':k==='starter'?v+' ml':k==='temp'?v+' °C':k==='date'?fd(parseISO(v)):String(v)}
+function diffs(a,b){return PKEYS.filter(function(k){return String(a[k])!==String(b[k])})}
+function logAdd(e){e.t=Date.now();e.d=e.d||todayISO();state.batch.log.push(e)}
+function dni(n){return n===1?'dzień':'dni'}
+function sweetTxt(r){return r.sweet==='honey'?Math.round(r.sugar/0.8)+' g miodu na litr (jak '+r.sugar+' g cukru)':r.sugar+' g cukru na litr'}
+function recLine(r){return nf(r.litres)+' l, herbata '+pv('tea',r.tea).toLowerCase()+', '+sweetTxt(r)+', starter '+r.starter+' ml/l, '+r.temp+' °C'}
+function recDl(r){
+  var a=amounts(r.litres,r.sweet==='honey',r.sugar,r.starter);
+  return h('dl',{class:'kvgrid'},
+    h('dt',{text:'Przepis'}),h('dd',{text:presetName(r)}),
+    h('dt',{text:'Objętość'}),h('dd',{text:nf(r.litres)+' l'}),
+    h('dt',{text:'Herbata'}),h('dd',{text:pv('tea',r.tea)+' · '+a.tea}),
+    h('dt',{text:r.sweet==='honey'?'Miód':'Cukier'}),h('dd',{text:sweetTxt(r)+' · razem '+a.sugar}),
+    h('dt',{text:'Starter'}),h('dd',{text:r.starter+' ml na litr · razem '+a.starter}),
+    h('dt',{text:'Temperatura'}),h('dd',{text:r.temp+' °C'}));
+}
+function renderLock(){
+  var b=state.batch,on=!!(b.startedAt&&b.rec),dd=on?diffs(params(b),b.rec):[];
+  ['#lock-note','#lock-note2'].forEach(function(id){
+    var n=$(id);if(!n)return;n.hidden=!on;n.textContent='';if(!on)return;
+    n.append(h('strong',{text:'Trwa nastaw z '+fd(parseISO(b.startedAt))+'. '}),
+      'Te suwaki to teraz podgląd albo plan następnego nastawu. Karta tego, co jest w słoju, się od nich nie zmienia.'+(dd.length?' Podgląd różni się od karty: '+dd.map(function(k){return PLAB[k].toLowerCase()+' '+pv(k,b.rec[k])+' → '+pv(k,b[k])}).join(', ')+'.':''),
+      h('span',{class:'row',style:'margin-top:8px'},dd.length?h('button',{class:'btn ghost small',type:'button',text:'Ustaw suwaki jak na karcie',onclick:function(){PKEYS.forEach(function(k){b[k]=b.rec[k]});save();renderNastaw();renderTemp();renderF2()}}):null,
+        h('button',{class:'btn ghost small',type:'button',text:'Pokaż kartę nastawu',onclick:function(){$('#card-sec').scrollIntoView({block:'start'})}})));
+  });
+}
+function cardForm(){
+  var b=state.batch,r=b.rec,honey0=r.sweet==='honey';
+  var L=h('input',{type:'number',id:'cf-litres',min:'0.5',max:'20',step:'0.5',inputmode:'decimal',value:String(r.litres)});
+  var T=h('select',{id:'cf-tea'});Object.keys(TEAS).forEach(function(k){T.append(h('option',{value:k,text:TEAS[k].n}))});T.value=r.tea;
+  var W=h('select',{id:'cf-sweet'},h('option',{value:'sugar',text:'Cukier'}),h('option',{value:'honey',text:'Miód'}));W.value=r.sweet;
+  var G=h('input',{type:'number',id:'cf-g',min:'20',max:'130',step:'1',inputmode:'numeric',value:String(honey0?Math.round(r.sugar/0.8):r.sugar)});
+  var S=h('select',{id:'cf-starter'});[100,150,200,250].forEach(function(v){S.append(h('option',{value:String(v),text:v+' ml'}))});S.value=String(r.starter);
+  var C=h('input',{type:'number',id:'cf-temp',min:'12',max:'35',step:'1',inputmode:'numeric',value:String(r.temp)});
+  var D=h('input',{type:'date',id:'cf-date',value:b.startedAt,max:todayISO()});
+  var N=h('input',{type:'text',id:'cf-note',maxlength:'140',placeholder:'np. tak naprawdę dałem mniej cukru'});
+  var gl=h('label',{for:'cf-g',text:'Gramów słodzika na litr'});
+  function f(id,lab,el){return h('div',{class:'field'},typeof lab==='string'?h('label',{for:id,text:lab}):lab,el)}
+  return h('div',{class:'card-form'},
+    h('p',{class:'muted',text:'Wpisz to, co faktycznie trafiło do słoja. Każda zmiana zapisze się w dzienniku.'}),
+    h('div',{class:'formgrid'},f('cf-date','Data nastawu',D),f('cf-litres','Objętość (l)',L),f('cf-tea','Herbata',T),f('cf-sweet','Słodzik',W),f('cf-g',gl,G),f('cf-starter','Starter na litr',S),f('cf-temp','Temperatura (°C)',C)),
+    f('cf-note','Powód zmiany (opcjonalnie)',N),
+    h('div',{class:'row'},h('button',{class:'btn',type:'button',text:'Zapisz kartę',onclick:function(){
+      var nr={litres:Math.min(20,Math.max(0.5,Math.round((parseFloat(String(L.value).replace(',','.'))||r.litres)*2)/2)),tea:T.value,sweet:W.value,
+        starter:+S.value,temp:Math.min(35,Math.max(12,parseInt(C.value,10)||r.temp))};
+      var g=parseFloat(String(G.value).replace(',','.'))||0;nr.sugar=Math.min(100,Math.max(30,Math.round(nr.sweet==='honey'?g*0.8:g)||r.sugar));
+      var note=N.value.trim().slice(0,140),dd=diffs(nr,r);
+      dd.forEach(function(k){logAdd({kind:'change',field:k,from:r[k],to:nr[k],note:note})});
+      if(D.value&&D.value!==b.startedAt){logAdd({kind:'change',field:'date',from:b.startedAt,to:D.value,note:note});b.startedAt=D.value}
+      PKEYS.forEach(function(k){r[k]=nr[k]});r.recon=false;ui.edit=false;save();renderNastaw();renderTemp();renderF2()}}),
+      h('button',{class:'btn ghost',type:'button',text:'Anuluj',onclick:function(){ui.edit=false;renderCard()}})));
+}
+function renderCard(){
+  var b=state.batch,sec=$('#card-sec');renderLock();sec.hidden=!b.startedAt;if(!b.startedAt||!b.rec)return;
+  var r=b.rec,day=batchDay(b),box=$('#card-box');box.textContent='';
+  box.append(h('p',{class:'eyebrow',text:'Nastawiono '+fd(parseISO(b.startedAt))}),h('h3',{text:'Dzień '+day+' · '+nf(r.litres)+' l'}));
+  if(r.recon)box.append(h('div',{class:'note',text:'Ten nastaw ruszył przed wprowadzeniem karty, więc odtworzyłem ją z ustawień zapisanych w chwili aktualizacji aplikacji. Jeśli wcześniej przestawiłeś suwaki, może nie zgadzać się ze słojem. Sprawdź i popraw.'}));
+  if(ui.edit)box.append(cardForm());
+  else box.append(recDl(r),h('div',{class:'row'},h('button',{class:'btn ghost',type:'button',text:r.recon?'Sprawdź i popraw kartę':'Popraw kartę',onclick:function(){ui.edit=true;renderCard()}}),
+    r.recon?h('button',{class:'btn ghost',type:'button',text:'Karta jest prawidłowa',onclick:function(){r.recon=false;logAdd({kind:'note',note:'Potwierdzono kartę nastawu: '+recLine(r)});save();renderCard()}}):null));
+  renderCal();renderDiary();
+}
+function renderDiary(){
+  var b=state.batch,box=$('#diary-box');box.textContent='';
+  var N=h('input',{type:'text',id:'diary-note',maxlength:'200',placeholder:'np. przeniosłem słój na szafkę, 21 °C'});
+  box.append(h('h3',{text:'Dziennik nastawu'}),h('p',{class:'muted',style:'font-size:.9rem',text:'Start, poprawki karty, degustacje, zdjęcia i Twoje notatki. Poprawek karty nie da się usunąć, żeby historia była wiarygodna.'}),
+    h('div',{class:'row'},h('div',{class:'field',style:'flex:1 1 16em'},h('label',{for:'diary-note',text:'Notatka'}),N),
+      h('button',{class:'btn ghost',type:'button',style:'align-self:flex-end',text:'Dodaj wpis',onclick:function(){var t=N.value.trim();if(!t)return;logAdd({kind:'note',note:t.slice(0,200)});save();renderDiary();renderGuide()}})),
+    logList());
+}
+/* kalendarz */
+function calList(){
+  var b=state.batch;if(!b.startedAt)return [];var c=cur(b),e=estimate(c),s=b.startedAt,L=[];
+  L.push({k:'start',title:'Kombucha: nastaw '+nf(c.litres)+' l',start:parseISO(s),days:1,desc:'Start fermentacji. '+recLine(c)+'.'});
+  L.push({k:'taste',title:'Kombucha: pierwsza degustacja',start:addDays(s,e.taste-1),days:1,alarm:true,desc:'Dzień '+e.taste+'. Spróbuj spod grzybka słomką i zapisz smak w dzienniku Magic Cafe.'});
+  L.push({k:'bottle',title:'Kombucha: czas butelkowania',start:addDays(s,Math.max(e.bal,e.taste)-1),days:Math.max(2,e.dry-Math.max(e.bal,e.taste)+2),alarm:true,desc:'Słodko-kwaśna około '+e.bal+'. dnia, wytrawna od '+e.dry+'. dnia (szacunek dla '+c.temp+' °C). Butelkuj, gdy smak Ci odpowiada.'});
+  if(b.bottledAt&&b.f2Days)L.push({k:'f2',title:'Kombucha: butelki do lodówki (koniec F2)',start:addDays(b.bottledAt,b.f2Days),days:1,alarm:true,desc:'Koniec drugiej fermentacji po '+b.f2Days+' '+dni(b.f2Days)+'. Ostrożnie uchyl korek nad zlewem i wstaw butelki do lodówki.'});
+  return L.sort(function(a,b){return a.start-b.start});
+}
+function ymd(d){return d.getFullYear()+pad(d.getMonth()+1)+pad(d.getDate())}
+function icsEsc(t){return String(t).replace(/\\/g,'\\\\').replace(/;/g,'\\;').replace(/,/g,'\\,').replace(/\r?\n/g,'\\n')}
+function fold(l){var o='',n=0,i,c,by;for(i=0;i<l.length;i++){c=l[i];by=unescape(encodeURIComponent(c)).length;if(n+by>73){o+='\r\n ';n=1}o+=c;n+=by}return o}
+function endOf(x){var e=new Date(x.start);e.setDate(e.getDate()+x.days);return e}
+function buildICS(L){
+  var b=state.batch,st=new Date().toISOString().replace(/[-:]/g,'').replace(/\.\d+/,''),o=['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//Magic Cafe//Kombucha//PL','CALSCALE:GREGORIAN','METHOD:PUBLISH','X-WR-CALNAME:Magic Cafe'];
+  L.forEach(function(x){
+    o.push('BEGIN:VEVENT','UID:'+b.id+'-'+x.k+'@magiccafe','DTSTAMP:'+st,'DTSTART;VALUE=DATE:'+ymd(x.start),'DTEND;VALUE=DATE:'+ymd(endOf(x)),'SUMMARY:'+icsEsc(x.title),'DESCRIPTION:'+icsEsc(x.desc),'TRANSP:TRANSPARENT');
+    if(x.alarm)o.push('BEGIN:VALARM','ACTION:DISPLAY','DESCRIPTION:'+icsEsc(x.title),'TRIGGER:PT9H','END:VALARM');
+    o.push('END:VEVENT');
+  });
+  o.push('END:VCALENDAR');return o.map(fold).join('\r\n')+'\r\n';
+}
+function saveICS(L,name){
+  var txt=buildICS(L),ua=navigator.userAgent||'',file=null;
+  try{file=new File([txt],name,{type:'text/calendar'})}catch(e){}
+  if(/Android/i.test(ua)&&file&&navigator.canShare&&navigator.canShare({files:[file]})){navigator.share({files:[file],title:'Terminy nastawu'}).catch(function(){});return}
+  var url=URL.createObjectURL(new Blob([txt],{type:'text/calendar;charset=utf-8'})),a=h('a',{href:url,download:name});
+  document.body.append(a);a.click();setTimeout(function(){URL.revokeObjectURL(url);a.remove()},5000);
+}
+function gcal(x){return 'https://calendar.google.com/calendar/render?action=TEMPLATE&text='+encodeURIComponent(x.title)+'&dates='+ymd(x.start)+'/'+ymd(endOf(x))+'&details='+encodeURIComponent(x.desc)}
+function calButtons(L,label){
+  return h('div',{class:'cal-actions'},
+    h('button',{class:'btn',type:'button',text:label||'Dodaj do kalendarza',onclick:function(){saveICS(L,'kombucha-'+(L.length>1?'terminy':L[0].k)+'.ics')}}),
+    h('details',{class:'gl'},h('summary',{text:'Albo przez Google Kalendarz'}),h('ul',{class:'list'},L.map(function(x){return h('li',null,h('a',{href:gcal(x),target:'_blank',rel:'noopener',text:x.title.replace('Kombucha: ','')+' · '+DFs.format(x.start)}))}))));
+}
+function renderCal(){
+  var box=$('#cal-box');box.textContent='';var L=calList();if(!L.length)return;
+  box.append(h('h3',{text:'Terminy'}),h('ul',{class:'evlist'},L.map(function(x){
+    return h('li',null,h('b',{text:x.days>1?DFs.format(x.start)+' – '+DFs.format(new Date(endOf(x)-864e5)):fd(x.start)}),h('span',{text:x.title.replace('Kombucha: ','')}))})),
+    calButtons(L,'Dodaj wszystkie do kalendarza'),
+    h('p',{class:'muted',style:'font-size:.84rem',text:'Plik .ics otworzy Kalendarz w telefonie albo Outlooka. Przypomnienie ustawia się na 9:00. Po poprawce karty albo butelkowaniu dodaj terminy ponownie, żeby zaktualizować daty.'}));
+}
+function bottleBox(){
+  var b=state.batch,di=h('input',{type:'date',id:'bottle-date',value:b.bottledAt||todayISO(),min:b.startedAt||'',max:todayISO()}),
+    fi=h('input',{type:'number',id:'bottle-f2',min:'0',max:'14',step:'1',inputmode:'numeric',value:String(b.f2Days==null?3:b.f2Days)});
+  var f2=b.bottledAt&&b.f2Days?calList().filter(function(x){return x.k==='f2'}):[];
+  return h('div',{class:'panel soft'},h('h3',{text:b.bottledAt?'Zabutelkowane '+fd(parseISO(b.bottledAt)):'Zapisz butelkowanie'}),
+    h('div',{class:'cols even'},h('div',{class:'field'},h('label',{for:'bottle-date',text:'Data butelkowania'}),di),h('div',{class:'field'},h('label',{for:'bottle-f2',text:'Dni F2 w temp. pokojowej'}),fi)),
+    h('div',{class:'row'},h('button',{class:b.bottledAt?'btn ghost':'btn',type:'button',text:b.bottledAt?'Zapisz zmiany':'Zabutelkowane',onclick:function(){
+      var d=di.value||todayISO(),n=parseInt(fi.value,10);if(!(n>=0&&n<=14))n=3;var first=!b.bottledAt;b.bottledAt=d;b.f2Days=n;
+      logAdd({kind:'bottled',d:d,note:(first?'Butelkowanie':'Poprawka butelkowania')+(n?'. F2 przez '+n+' '+dni(n)+', do lodówki '+fd(addDays(d,n)):'. Bez F2, od razu do lodówki')});save();renderNastaw()}})),
+    f2.length?calButtons(f2,'Przypomnij o lodówce (kalendarz)'):null);
+}
+
 
 /* zapis na koncie (prywatny dla widza), gdy strona działa w Claude */
 var remoteDoc=null,remoteTimer=null,writing=false,dirty=false;
@@ -1494,7 +1691,7 @@ function stageText(day,e){
 function mix(a,b,p){function c(x,i){return parseInt(x.slice(1+i*2,3+i*2),16)}var o='#',i;for(i=0;i<3;i++){o+=pad2(Math.round(c(a,i)+(c(b,i)-c(a,i))*p))}return o}
 function pad2(n){var s=n.toString(16);return s.length<2?'0'+s:s}
 function renderHero(){
-  var b=state.batch,e=estimate(b),day=batchDay(b),box=$('#hero-status');
+  var b=cur(),e=estimate(b),day=batchDay(b),box=$('#hero-status');
   box.textContent='';
   var p=day?Math.min(1,(day-1)/Math.max(1,e.end-1)):0;
   $('#hero-eyebrow').textContent=presetName(b)+' · '+amounts(1,b.sweet==='honey',sug(b)).sugar+' '+(b.sweet==='honey'?'miodu':'cukru')+' na litr';
@@ -1541,24 +1738,30 @@ function confirmBox(key,ask,yes,fn){
 }
 function archive(discarded){
   var b=state.batch,last=null;b.log.forEach(function(x){if(x.kind==='taste')last=x});
-  if(b.startedAt)state.history.unshift({id:b.id,startedAt:b.startedAt,endedAt:todayISO(),litres:b.litres,days:batchDay(b),sour:last?last.sour:null,discarded:!!discarded});
+  var c=cur(b);
+  if(b.startedAt)state.history.unshift({id:b.id,startedAt:b.startedAt,endedAt:todayISO(),bottledAt:b.bottledAt||null,f2Days:b.bottledAt?b.f2Days:null,litres:c.litres,
+    days:b.bottledAt?dayDiff(b.startedAt,b.bottledAt)+1:batchDay(b),sour:last?last.sour:null,discarded:!!discarded,rec:b.rec?params(c):null,log:b.log.slice(-150)});
   state.history=state.history.slice(0,40);
-  state.batch=newBatch(b);ui.open=0;ui.day=null;save();renderAll();
+  state.batch=newBatch(b);ui.open=0;ui.day=null;ui.edit=false;save();renderAll();
 }
 var SOUR=['','Bardzo słodka. Daj jej jeszcze 2–3 dni.','Wciąż słodka. Spróbuj ponownie jutro lub pojutrze.','Balans słodyczy i kwasu. Butelkuj, jeśli lubisz łagodną.','Wyraźnie kwaśna i wytrawna. Butelkuj dziś.','Ocet herbaciany. Zostaw jako starter albo do sałatek.'];
-function logList(){
-  var b=state.batch;
-  if(!b.log.length)return h('p',{class:'muted',text:'Dziennik jest pusty. Zapisz pierwszą degustację albo ocenę zdjęcia.'});
+function logText(x){
+  return x.kind==='taste'?'Smak '+x.sour+'/5'+(x.ph?' · pH '+nf(x.ph):'')+(x.note?' · '+x.note:''):x.kind==='photo'?'Zdjęcie: '+x.title:
+    x.kind==='change'?'Poprawka karty – '+(PLAB[x.field]||x.field).toLowerCase()+': '+pv(x.field,x.from)+' → '+pv(x.field,x.to)+(x.note?' · '+x.note:''):x.note||'';
+}
+function logList(src,ro){
+  var b=src||state.batch;
+  if(!b.log||!b.log.length)return h('p',{class:'muted',text:'Dziennik jest pusty. Zapisz degustację, notatkę albo ocenę zdjęcia.'});
   var ul=h('ul',{class:'log'});
   b.log.slice().reverse().forEach(function(x){
-    var txt=x.kind==='taste'?'Smak '+x.sour+'/5'+(x.ph?' · pH '+nf(x.ph):'')+(x.note?' · '+x.note:''):x.kind==='photo'?'Zdjęcie: '+x.title:x.note;
-    ul.append(h('li',null,h('span',{class:'when',text:DFs.format(new Date(x.t))+(b.startedAt?' · dz. '+(dayDiff(b.startedAt,x.d||todayISO())+1):'')}),h('span',{class:'what',text:txt}),
-      h('button',{class:'x',type:'button','aria-label':'Usuń wpis',text:'×',onclick:function(){b.log=b.log.filter(function(y){return y!==x});save();renderGuide()}})));
+    var fixed=x.kind==='change'||x.kind==='start';
+    ul.append(h('li',{class:'k-'+(x.kind||'note')},h('span',{class:'when',text:DFs.format(new Date(x.t))+(b.startedAt?' · dz. '+(dayDiff(b.startedAt,x.d||todayISO())+1):'')}),h('span',{class:'what',text:logText(x)}),
+      ro||fixed?h('span'):h('button',{class:'x',type:'button','aria-label':'Usuń wpis',text:'×',onclick:function(){var s=state.batch;s.log=s.log.filter(function(y){return y!==x});save();renderGuide();renderCard()}})));
   });
   return ul;
 }
 function stepBody(i){
-  var b=state.batch,a=amounts(b.litres,b.sweet==='honey',sug(b),stOf(b)),e=estimate(b),day=batchDay(b),tea=TEAS[b.tea],honey=b.sweet==='honey';
+  var b=i>=6?cur():state.batch,a=amounts(b.litres,b.sweet==='honey',sug(b),stOf(b)),e=estimate(b),day=batchDay(b),tea=TEAS[b.tea],honey=b.sweet==='honey';
   if(i===0)return [h('p',{text:'Czyste szkło i czyste ręce to połowa sukcesu. Słój wypłucz gorącą wodą tak, żeby nie został na nim płyn do naczyń.'}),
     b.litres>=2?h('div',{class:'note cool',text:'Na '+a.water+' herbaty i '+a.starter+' startera potrzebujesz słoja o pojemności co najmniej '+nf(Math.ceil((b.litres+stOf(b)*b.litres/1000)*1.1*2)/2)+' l albo kilku mniejszych. Jeden grzybek wystarczy: w pozostałych słojach nowy urośnie sam, jeśli każdy dostanie swoją porcję startera.'}):null,
     check('jar','Szklany słój umyty i wypłukany gorącą wodą'),check('hands','Ręce umyte, drewniana lub plastikowa łyżka pod ręką'),
@@ -1582,12 +1785,14 @@ function stepBody(i){
     check('scoby','Grzybek jest w słoju'),check('starter','Starter dodany'),nextBtn(4)];
   if(i===5){
     var dateIn=h('input',{type:'date',id:'start-date',value:b.startedAt||todayISO(),max:todayISO()});
-    var tempIn=h('input',{type:'number',id:'start-temp',min:'12',max:'35',step:'1',inputmode:'numeric',value:String(b.temp)});
+    var tempIn=h('input',{type:'number',id:'start-temp',min:'12',max:'35',step:'1',inputmode:'numeric',value:String(cur().temp)});
     return [h('p',{text:'Przykryj słoik gazą lub ściereczką i zabezpiecz gumką recepturką. Odstaw w ciemne, ciepłe miejsce na 7–10 dni.'}),
       h('div',{class:'note cool',text:'Gazę złóż w kilka warstw albo użyj gęstej bawełnianej ściereczki, żeby nie wpuścić muszek. Słój ma stać bez słońca i bez przestawiania.'}),
       h('div',{class:'cols even'},h('div',{class:'field'},h('label',{for:'start-date',text:'Data nastawienia'}),dateIn),h('div',{class:'field'},h('label',{for:'start-temp',text:'Temperatura w tym miejscu (°C)'}),tempIn)),
       h('button',{class:'btn',type:'button',text:b.startedAt?'Zapisz zmiany':'Start fermentacji',onclick:function(){
-        b.startedAt=dateIn.value||todayISO();var t=parseInt(tempIn.value,10);if(t>=12&&t<=35)b.temp=t;
+        var was=b.startedAt,nd=dateIn.value||todayISO(),t=parseInt(tempIn.value,10);if(!(t>=12&&t<=35))t=cur().temp;
+        if(!was||!b.rec){b.temp=t;b.startedAt=nd;b.rec=params(b);b.rec.at=Date.now();logAdd({kind:'start',d:nd,note:'Start fermentacji: '+recLine(b.rec)})}
+        else{if(nd!==was){logAdd({kind:'change',field:'date',from:was,to:nd});b.startedAt=nd}if(t!==b.rec.temp){logAdd({kind:'change',field:'temp',from:b.rec.temp,to:t});b.rec.temp=t}b.temp=t}
         b.step=Math.max(b.step,6);ui.open=6;save();renderNastaw();focusStep(6)}})];
   }
   if(i===6){
@@ -1598,7 +1803,7 @@ function stepBody(i){
         h('div',null,h('span',{class:'muted',text:'Słodko-kwaśna od'}),h('b',{text:fd(addDays(b.startedAt,e.bal-1))})),
         h('div',null,h('span',{class:'muted',text:'Wytrawna od'}),h('b',{text:fd(addDays(b.startedAt,e.dry-1))}))),
       h('p',{class:'muted',text:'Szacunek dla '+b.temp+' °C: '+e.zone.toLowerCase()+'. '+e.txt}),
-      h('div',{class:'row'},h('button',{class:'btn',type:'button',text:'Sprawdź nastaw na zdjęciu',onclick:function(){$('#photo-day').value=day;go('kontrola')}}),nextBtn(6,'Przejdź do degustacji')),
+      h('div',{class:'row'},h('button',{class:'btn',type:'button',text:'Sprawdź nastaw na zdjęciu',onclick:function(){$('#photo-day').value=day;go('kontrola')}}),nextBtn(6,'Przejdź do degustacji'),h('button',{class:'btn ghost',type:'button',text:'Karta, terminy i dziennik',onclick:function(){$('#card-sec').scrollIntoView({block:'start'})}})),
       confirmBox('discard','Nastaw się nie udał','Tak, zaczynam od nowa',function(){archive(true)})];
   }
   if(i===7){
@@ -1613,12 +1818,12 @@ function stepBody(i){
       h('div',{class:'cols even'},h('div',{class:'field'},h('label',{for:'taste-ph',text:'pH'}),ph),h('div',{class:'field'},h('label',{for:'taste-note',text:'Notatka'}),note)),
       h('div',{class:'row'},h('button',{class:'btn ghost',type:'button',text:'Zapisz degustację',onclick:function(){
         var p=parseFloat(String(ph.value).replace(',','.'));
-        b.log.push({t:Date.now(),d:todayISO(),kind:'taste',sour:+range.value,ph:p>=1.5&&p<=7?p:null,note:note.value.trim().slice(0,140)});save();renderGuide()}}),nextBtn(7,'Jest gotowa, butelkuję')),
+        b.log.push({t:Date.now(),d:todayISO(),kind:'taste',sour:+range.value,ph:p>=1.5&&p<=7?p:null,note:note.value.trim().slice(0,140)});save();renderGuide();renderCard()}}),nextBtn(7,'Jest gotowa, butelkuję')),
       h('h3',{text:'Dziennik nastawu'}),logList()];
   }
   return [h('p',{text:'Czystymi rękami wyjmij grzybek. Odlej '+a.starter+' płynu jako starter na następny nastaw, a resztę przelej do butelek.'}),
     h('div',{class:'note cool',text:'Chcesz bąbelków i smaku? Dodaj do butelek owoce i zostaw je na 2–4 dni w temperaturze pokojowej. Proporcje policzy planer butelkowania.'}),
-    check('keep','Grzybek i starter odłożone na kolejny nastaw'),check('bottled','Butelki napełnione, 2–3 cm wolnego miejsca pod korkiem'),
+    check('keep','Grzybek i starter odłożone na kolejny nastaw'),check('bottled','Butelki napełnione, 2–3 cm wolnego miejsca pod korkiem'),bottleBox(),
     h('div',{class:'row'},h('button',{class:'btn ghost',type:'button',text:'Otwórz planer',onclick:function(){$('#f2-litres').value=b.litres;renderF2();go('narzedzia')}}),h('button',{class:'btn ghost',type:'button',text:'Zobacz smaki',onclick:function(){go('przepisy')}})),
     confirmBox('finish','Zakończ ten nastaw','Tak, zakończ',function(){archive(false)})];
 }
@@ -1636,11 +1841,17 @@ function renderGuide(){
   paintTimers();
 }
 function renderHistory(){
-  var sec=$('#history-sec'),ul=$('#history');ul.textContent='';sec.hidden=!state.history.length;
+  var sec=$('#history-sec'),box=$('#history');box.textContent='';sec.hidden=!state.history.length;
   state.history.forEach(function(x){
-    ul.append(h('li',null,h('span',{class:'when',text:DFs.format(parseISO(x.startedAt))}),
-      h('span',{class:'what',text:nf(x.litres)+' l · '+x.days+' dni'+(x.sour?' · smak '+x.sour+'/5':'')}),
-      h('span',{class:'pill '+(x.discarded?'s-bad':'s-ok'),text:x.discarded?'nieudany':'zabutelkowany'})));
+    var r=x.rec;
+    var body=h('div',{class:'hb'},
+      r?recDl(r):h('p',{class:'muted',text:'Ten nastaw zakończono przed wprowadzeniem karty, więc nie ma zapisanych parametrów.'}),
+      h('p',{class:'muted',text:'Nastawiono '+fd(parseISO(x.startedAt))+(x.bottledAt?', zabutelkowano '+fd(parseISO(x.bottledAt))+(x.f2Days?', F2 przez '+x.f2Days+' '+dni(x.f2Days):''):'')+', zakończono '+fd(parseISO(x.endedAt))+'.'}),
+      x.log&&x.log.length?logList({log:x.log,startedAt:x.startedAt},true):null,
+      r&&!state.batch.startedAt?h('button',{class:'btn ghost small',type:'button',text:'Nastaw ponownie z tymi parametrami',onclick:function(){var b=state.batch;['litres','tea','sweet','sugar','starter'].forEach(function(k){b[k]=r[k]});save();renderNastaw();renderTemp();renderF2();$('#taste-sec').scrollIntoView({block:'start'})}}):null);
+    box.append(h('details',{class:'hist'},h('summary',null,h('span',{class:'when',text:DFs.format(parseISO(x.startedAt))}),
+      h('span',{class:'what',text:nf(x.litres)+' l · '+x.days+' dni'+(r?' · '+(r.sweet==='honey'?'miód':'cukier')+' '+r.sugar+' g/l':'')+(x.sour?' · smak '+x.sour+'/5':'')}),
+      h('span',{class:'pill '+(x.discarded?'s-bad':'s-ok'),text:x.discarded?'nieudany':'zabutelkowany'})),body));
   });
 }
 var NS='http://www.w3.org/2000/svg',CX0=36,CX1=312,CY0=20,CY1=142;
@@ -1686,7 +1897,7 @@ function renderTaste(){
   [1,3,5,7,10,14,21].forEach(function(day){tb.append(h('tr',null,h('td',{class:'num',text:String(day)}),h('td',{text:sweetLabel(m.R(day))+' ('+Math.round(m.R(day))+' g/l)'}),h('td',{text:m.L(day)})))});
   drawChart(m,d,e);
 }
-function renderNastaw(){renderHero();renderTaste();renderIng();renderGuide();renderHistory()}
+function renderNastaw(){renderHero();renderTaste();renderIng();renderGuide();renderHistory();renderCard();if(window.MC_BACKUP)window.MC_BACKUP.render()}
 
 /* ---------- widok: przepisy ---------- */
 function renderRecipes(){
@@ -1729,7 +1940,7 @@ function renderF2(){
   var l=parseFloat(String($('#f2-litres').value).replace(',','.')),size=+$('#f2-size').value,o=$('#f2-out');o.textContent='';
   var r=RECIPES.filter(function(x){return x.id===$('#f2-flavour').value})[0];
   if(!(l>=0.5&&l<=20)||!r){o.append(h('span',{text:'Wpisz objętość od 0,5 do 20 litrów.'}));return}
-  var st=stOf(state.batch),usable=l*1000-st*l,fill=size*0.94,n=Math.floor(usable/fill),rest=Math.round((usable-n*fill)/10)*10,k=size/500;
+  var st=stOf(cur()),usable=l*1000-st*l,fill=size*0.94,n=Math.floor(usable/fill),rest=Math.round((usable-n*fill)/10)*10,k=size/500;
   o.append(h('span',{class:'bigfig num',text:n+' '+(n===1?'butelka':(n%10>=2&&n%10<=4&&(n%100<10||n%100>=20))?'butelki':'butelek')+' po '+(size===1000?'1 l':size+' ml')}),
     h('span',{class:'muted',text:'Po odlaniu '+nf(st*l,0)+' ml startera na następny nastaw.'+(rest>=100?' Zostanie jeszcze ok. '+rest+' ml do szklanki lub mniejszej butelki.':'')}),
     h('p',{class:'label',text:'Do każdej butelki: '+r.name.toLowerCase()}),
@@ -1743,6 +1954,7 @@ function renderTools(){
   if(!p.firstChild)[['Zielona 4 min',240],['Mieszanka 6 min',360],['Czarna 8 min',480],['Studzenie 20 min',1200]].forEach(function(x){p.append(h('button',{class:'chip',type:'button',text:x[0],onclick:function(){timerSet(x[1])}}))});
   var faq=$('#faq');
   if(!faq.firstChild)FAQ.forEach(function(q){faq.append(h('details',{class:'faq'},h('summary',{text:q[0]}),h('div',null,q[1].map(function(t){return h('p',{text:t})}))))});
+  if(!$('#faq-more')&&faq.parentNode)faq.parentNode.insertBefore(h('button',{class:'btn ghost',id:'faq-more',type:'button',style:'margin-top:12px;align-self:flex-start',text:'Więcej pytań: przechowywanie grzybka, przerwy, F2…',onclick:function(){if(window.MC_QA)window.MC_QA.ask('','kombucha')}}),faq.nextSibling);
   renderTemp();renderPh();renderF2();paintTimers();
 }
 function renderFacts(){
@@ -1783,7 +1995,7 @@ function setPhoto(file){
   img.src=url;
 }
 function buildPrompt(){
-  var b=state.batch,d=parseInt($('#photo-day').value,10);
+  var b=cur(),d=parseInt($('#photo-day').value,10);
   return 'Jesteś doświadczonym domowym piwowarem kombuchy i oceniasz stan nastawu na załączonym zdjęciu.\n'+
   'Kontekst od użytkownika: na zdjęciu jest '+$('#photo-what').value+'. Dzień fermentacji: '+(d>=0?d:'nie podano')+'. Przepis: na litr 4–6 g herbaty, '+(b.sweet==='honey'?Math.round(sug(b)/0.8)+' g miodu zamiast cukru':sug(b)+' g cukru')+', '+stOf(b)+' ml startera. Temperatura otoczenia około '+b.temp+' °C.\n\n'+
   'Co jest normalne: brązowe nitki i osad drożdży; mokra, kremowa, biała lub przezroczysta błona na powierzchni, także nierówna, pomarszczona, z bąblami powietrza lub dziurami; grzybek zatopiony lub ustawiony bokiem; ciemniejsze plamy wtopione w grzybek; mętny płyn.\n'+
@@ -4019,16 +4231,18 @@ $('#case-file').addEventListener('change',function(ev){
 });
 
 /* ---------- sala i odtwarzacze ---------- */
-var APPS=['store','kombucha','kawa','matcha','bar'];
+var APPS=['store','kombucha','kawa','matcha','bar','pytania'];
 function show(a,keep){
   if(APPS.indexOf(a)<0)a='store';
   APPS.forEach(function(x){var el=D.getElementById(x==='store'?'store':'app-'+x);if(el)el.hidden=x!==a});
   Array.prototype.forEach.call(D.querySelectorAll('#suite-seg button'),function(b){b.setAttribute('aria-pressed',String(b.dataset.app===a))});
   try{localStorage.setItem(LS+'-app',a)}catch(e){}
   if(a==='store')renderStore();
+  if(a==='pytania'&&window.MC_QA)window.MC_QA.open();
   if(!keep)window.scrollTo(0,0);
 }
 Array.prototype.forEach.call(D.querySelectorAll('#suite-seg button'),function(b){b.addEventListener('click',function(){show(b.dataset.app)})});
+window.MC_SHOW=show;
 var first=null;try{first=localStorage.getItem(LS+'-app')}catch(e){}
 show(first||'store',true);
 initRemote();
@@ -4047,5 +4261,179 @@ if(req&&!inApp&&(document.fullscreenEnabled||document.webkitFullscreenEnabled)){
   document.addEventListener('fullscreenchange',paint);document.addEventListener('webkitfullscreenchange',paint);paint()}
 })();</script>
 <script>if("serviceWorker" in navigator&&location.protocol==="https:")window.addEventListener("load",function(){navigator.serviceWorker.register("sw.js").catch(function(){})});</script>
+<script>
+/* ---------- Kopia zapasowa całej aplikacji (plik + chmura Supabase) ---------- */
+window.MC_BACKUP=(function(){
+'use strict';
+var KEYS=['aloha-kombucha-v1','aloha-kawa-v1','aloha-matcha-v1','aloha-bar-v1','magic-cafe-v1'],SK='magiccafe-sync-v1',D=document;
+function $(id){return D.getElementById(id)}
+function el(tag,a){var e=D.createElement(tag),k,i;if(a)for(k in a){var v=a[k];if(v==null||v===false)continue;if(k==='class')e.className=v;else if(k==='text')e.textContent=v;else if(k.slice(0,2)==='on')e.addEventListener(k.slice(2),v);else if(k==='value'||k==='disabled'||k==='hidden')e[k]=v;else e.setAttribute(k,v)}
+  for(i=2;i<arguments.length;i++){var c=arguments[i];if(c==null||c===false)continue;if(Array.isArray(c))c.forEach(function(x){if(x)e.append(x)});else e.append(c)}return e}
+function ls(k,v){try{if(v===undefined)return localStorage.getItem(k);if(v===null)localStorage.removeItem(k);else localStorage.setItem(k,v)}catch(e){return null}}
+function sync(){try{return JSON.parse(ls(SK))||{}}catch(e){return {}}}
+function setSync(o){ls(SK,JSON.stringify(o))}
+function bundle(lite){
+  var o={app:'magiccafe',v:1,at:Date.now(),data:{}};
+  KEYS.forEach(function(k){var v=ls(k);if(v==null)return;try{var j=JSON.parse(v);
+    if(lite&&j&&j.covers&&typeof j.covers==='object'){Object.keys(j.covers).forEach(function(c){if(j.covers[c]&&j.covers[c].d)delete j.covers[c]})}
+    o.data[k]=j}catch(e){}});
+  return o;
+}
+function restore(o){
+  if(!o||o.app!=='magiccafe'||!o.data||typeof o.data!=='object')throw new Error('bad');
+  Object.keys(o.data).forEach(function(k){if(KEYS.indexOf(k)<0)return;var j=o.data[k];
+    if(k==='magic-cafe-v1'&&j&&typeof j==='object'){try{var mine=JSON.parse(ls(k)||'{}');if(mine&&mine.covers){j.covers=j.covers||{};Object.keys(mine.covers).forEach(function(c){if(!j.covers[c])j.covers[c]=mine.covers[c]})}}catch(e){}}
+    ls(k,JSON.stringify(j))});
+}
+function fdt(t){try{return new Date(t).toLocaleString('pl-PL',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'})}catch(e){return ''}}
+function newCode(){var A='ABCDEFGHJKLMNPQRSTUVWXYZ23456789',r=new Uint8Array(16),o='',i;crypto.getRandomValues(r);for(i=0;i<16;i++)o+=A[r[i]%32];return o}
+function pretty(c){return c.replace(/(.{4})(?=.)/g,'$1-')}
+function post(b){return window.MC_AI&&window.MC_AI.post?window.MC_AI.post(b):Promise.reject(new Error('offline'))}
+var timer=null,busy=false,msg='',lastSig=null;
+function sig(){var b=bundle(true);delete b.at;return JSON.stringify(b)}
+function push(force){
+  var s=sync();if(!s.code||busy)return Promise.resolve();
+  var b=bundle(true),g=JSON.stringify(b.data);if(!force&&g===lastSig)return Promise.resolve();
+  busy=true;return post({action:'journal_put',code:s.code,data:b}).then(function(r){lastSig=g;s.last=Date.now();s.err=null;setSync(s);msg=''}).catch(function(e){s.err=(e&&e.message)||'błąd';setSync(s)}).then(function(){busy=false;render()});
+}
+function soon(){if(!sync().code)return;clearTimeout(timer);timer=setTimeout(push,4000)}
+setInterval(function(){if(sync().code&&!D.hidden)push()},60000);
+D.addEventListener('visibilitychange',function(){if(D.hidden&&sync().code)push()});
+var confirmImport=null,pendingCloud=null;
+function render(){
+  var L=$('backup-local'),C=$('backup-cloud');if(!L||!C)return;L.textContent='';C.textContent='';
+  var file=el('input',{type:'file',accept:'application/json,.json',hidden:true,onchange:function(ev){var f=ev.target.files&&ev.target.files[0];ev.target.value='';if(!f)return;
+    f.text().then(function(t){var o=JSON.parse(t);if(o.app!=='magiccafe')throw 0;confirmImport=o;render()}).catch(function(){msg='To nie jest plik kopii Magic Cafe.';render()})}});
+  L.append(el('h3',{text:'Plik na telefonie lub komputerze'}),el('p',{class:'muted',style:'font-size:.9rem',text:'Pobierz kopię wszystkich działów (nastawy, dziennik, ulubione, karta klubowa) i wczytaj ją na innym urządzeniu albo po wyczyszczeniu przeglądarki.'}),
+    el('div',{class:'row'},el('button',{class:'btn',type:'button',text:'Pobierz kopię',onclick:function(){
+      var t=JSON.stringify(bundle(false)),u=URL.createObjectURL(new Blob([t],{type:'application/json'})),d=new Date(),a=el('a',{href:u,download:'magic-cafe-kopia-'+d.getFullYear()+'-'+('0'+(d.getMonth()+1)).slice(-2)+'-'+('0'+d.getDate()).slice(-2)+'.json'});
+      D.body.append(a);a.click();setTimeout(function(){URL.revokeObjectURL(u);a.remove()},4000)}}),
+      el('button',{class:'btn ghost',type:'button',text:'Wczytaj z pliku',onclick:function(){file.click()}}),file));
+  if(confirmImport)L.append(el('div',{class:'note'},'Kopia z '+fdt(confirmImport.at)+'. Wczytanie zastąpi dane w tej przeglądarce. ',
+    el('span',{class:'row',style:'margin-top:8px'},el('button',{class:'btn danger small',type:'button',text:'Tak, wczytaj',onclick:function(){try{restore(confirmImport);location.reload()}catch(e){msg='Nie udało się wczytać kopii.';confirmImport=null;render()}}}),
+      el('button',{class:'btn ghost small',type:'button',text:'Anuluj',onclick:function(){confirmImport=null;render()}}))));
+  if(msg)L.append(el('p',{class:'muted',text:msg}));
+
+  var s=sync();
+  C.append(el('h3',{text:'Kopia w chmurze (Supabase)'}));
+  if(s.code){
+    C.append(el('p',{style:'font-size:.92rem',text:'Włączona. Po każdej zmianie aplikacja zapisuje kopię pod Twoim prywatnym kodem. Zapisz go w bezpiecznym miejscu: kto ma kod, może odczytać kopię.'}),
+      el('div',{class:'codebox',text:pretty(s.code)}),
+      el('p',{class:'muted',style:'font-size:.86rem',text:s.err?'Ostatni zapis się nie udał ('+s.err+'). Spróbuję ponownie.':s.last?'Ostatni zapis: '+fdt(s.last)+'.':'Zapisuję pierwszą kopię…'}),
+      el('div',{class:'row'},el('button',{class:'btn ghost small',type:'button',text:busy?'Zapisuję…':'Zapisz teraz',disabled:busy,onclick:function(){push(true)}}),
+        el('button',{class:'btn ghost small',type:'button',text:'Kopiuj kod',onclick:function(ev){try{navigator.clipboard.writeText(s.code);ev.target.textContent='Skopiowano'}catch(e){}}}),
+        el('button',{class:'btn ghost small',type:'button',text:'Wyłącz',onclick:function(){setSync({});render()}})));
+  }else{
+    C.append(el('p',{style:'font-size:.92rem',text:'Automatyczna kopia w Twojej bazie Supabase. Dostajesz prywatny kod, którym przywrócisz dane na innym urządzeniu albo po utracie danych przeglądarki.'}),
+      el('button',{class:'btn',type:'button',text:'Włącz kopię w chmurze',onclick:function(){setSync({code:newCode()});lastSig=null;render();push(true)}}));
+  }
+  var inp=el('input',{type:'text',id:'bk-code',placeholder:'XXXX-XXXX-XXXX-XXXX',maxlength:'24',autocomplete:'off',style:'text-transform:uppercase'});
+  C.append(el('details',null,el('summary',{style:'cursor:pointer;font-weight:600',text:'Przywróć z kodu'}),
+    el('div',{class:'field',style:'margin-top:10px'},el('label',{for:'bk-code',text:'Kod kopii'}),inp),
+    el('button',{class:'btn ghost small',type:'button',style:'margin-top:10px',text:'Sprawdź kopię',onclick:function(){
+      var c=inp.value.toUpperCase().replace(/[^A-Z0-9]/g,'');if(!/^[A-Z2-9]{16}$/.test(c)){msg2(C,'Kod ma 16 znaków, np. ABCD-EFGH-JKLM-NPQR.');return}
+      post({action:'journal_get',code:c}).then(function(r){pendingCloud={code:c,data:r.data,at:r.updated_at};render()}).catch(function(e){msg2(C,e&&e.code==='not_found'?'Nie ma kopii o tym kodzie.':'Nie udało się połączyć z chmurą.')})}})));
+  if(pendingCloud)C.append(el('div',{class:'note'},'Kopia z '+fdt(pendingCloud.at)+'. Wczytanie zastąpi dane w tej przeglądarce, a to urządzenie zacznie zapisywać pod tym samym kodem. ',
+    el('span',{class:'row',style:'margin-top:8px'},el('button',{class:'btn danger small',type:'button',text:'Tak, przywróć',onclick:function(){try{restore(pendingCloud.data);setSync({code:pendingCloud.code,last:Date.now()});location.reload()}catch(e){msg2(C,'Kopia jest uszkodzona.')}}}),
+      el('button',{class:'btn ghost small',type:'button',text:'Anuluj',onclick:function(){pendingCloud=null;render()}}))));
+}
+function msg2(C,t){var p=C.querySelector('.bk-msg');if(!p){p=el('p',{class:'muted bk-msg'});C.append(p)}p.textContent=t}
+if(D.readyState==='loading')D.addEventListener('DOMContentLoaded',render);else render();
+if(sync().code)setTimeout(push,3000);
+return {soon:soon,render:render,push:push};
+})();
+</script>
+<script>
+/* ---------- Pytania i odpowiedzi: baza wiedzy z Supabase (magiccafe.faq), kopia offline w faq.json ---------- */
+window.MC_QA=(function(){
+'use strict';
+var D=document,KK='magiccafe-faq-v1',TTL=6*36e5,data=null,loading=null,filter='all',q='',ai={busy:false,ans:null,err:null,q:''},opened=false;
+function $(id){return D.getElementById(id)}
+function el(tag,a){var e=D.createElement(tag),k,i;if(a)for(k in a){var v=a[k];if(v==null||v===false)continue;if(k==='class')e.className=v;else if(k==='text')e.textContent=v;else if(k.slice(0,2)==='on')e.addEventListener(k.slice(2),v);else if(k==='value'||k==='disabled'||k==='hidden'||k==='open')e[k]=v;else e.setAttribute(k,v)}
+  for(i=2;i<arguments.length;i++){var c=arguments[i];if(c==null||c===false)continue;if(Array.isArray(c))c.forEach(function(x){if(x)e.append(x)});else e.append(c)}return e}
+var GROUPS=[['all','Wszystko'],['kombucha','Kombucha'],['kawa','Kawa'],['matcha','Matcha'],['bar','Soki, shoty, shaki'],['inne','Inne fermentacje i herbata']];
+function grp(d){return d==='kombucha'||d==='kawa'||d==='matcha'?d:(d==='soki'||d==='shoty'||d==='shake')?'bar':'inne'}
+var QUICK=['jak przechować grzybek','pleśń czy drożdże','wyjeżdżam na urlop','za mało bąbelków','kawa kwaśna','kawa gorzka','jak mielić do V60','matcha grudki','matcha gorzka','ile wytrzyma sok','shot imbirowy','kefir wodny przerwa'];
+var STOP={i:1,w:1,z:1,na:1,do:1,co:1,jak:1,czy:1,sie:1,to:1,nie:1,a:1,o:1,mam:1,moj:1,moja:1,moje:1,gdy:1,jest:1,by:1,po:1,od:1,za:1,ze:1,u:1,mi:1,mnie:1,ja:1,tak:1,ile:0,jaka:1,jaki:1,jakie:1,dlaczego:1,czemu:1,robic:1,zrobic:1,mozna:1,trzeba:1,sa:1,ten:1,ta:1,te:1,the:1,of:1};
+function norm(t){return String(t||'').toLowerCase().replace(/ł/g,'l').normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/[^a-z0-9 ]+/g,' ')}
+function toks(t){return norm(t).split(/\s+/).filter(function(w){return w.length>1&&!STOP[w]})}
+function stem(w){return w.length>5?w.slice(0,Math.max(4,w.length-3)):w}
+function index(list){list.forEach(function(x){x._q=toks(x.q);x._t=toks((x.tags||[]).join(' ')+' '+x.drink);x._c=toks(x.cat);x._a=toks((x.a||[]).join(' '));x._g=grp(x.drink)});return list}
+function hit(words,st){for(var i=0;i<words.length;i++){if(words[i].indexOf(st)===0)return 1}return 0}
+function score(x,qs){
+  var sc=0,cov=0;qs.forEach(function(w){var st=stem(w),s=hit(x._q,st)*5+hit(x._t,st)*4+hit(x._c,st)*2+hit(x._a,st)*1;if(s)cov++;sc+=s});
+  return cov?sc*(cov/qs.length)*(cov/qs.length):0;
+}
+function search(){
+  var list=(data||[]).filter(function(x){return filter==='all'||x._g===filter}),qs=toks(q);
+  if(!qs.length)return {list:list,ranked:false};
+  return {list:list.map(function(x){return [score(x,qs),x]}).filter(function(p){return p[0]>0}).sort(function(a,b){return b[0]-a[0]}).filter(function(p,i,arr){return i<5||p[0]>=arr[0][0]*.3}).slice(0,25).map(function(p){return p[1]}),ranked:true};
+}
+function mark(text,qs){
+  if(!qs.length)return [D.createTextNode(text)];
+  var stems=qs.map(stem),out=[],re=/[^\s]+|\s+/g,m;
+  while((m=re.exec(text))){var w=m[0],nw=norm(w).trim();
+    if(nw&&stems.some(function(s){return nw.indexOf(s)===0}))out.push(el('mark',{text:w}));else out.push(D.createTextNode(w))}
+  return out;
+}
+var LABEL={kombucha:'Kombucha',kawa:'Kawa',matcha:'Matcha',soki:'Soki',shoty:'Shoty',shake:'Shake','kefir wodny':'Kefir wodny','ginger beer':'Ginger beer','kwas chlebowy':'Kwas chlebowy',jun:'Jun',herbata:'Herbata','fermentacja ogólnie':'Fermentacja'};
+function item(x,qs,open){
+  return el('details',{class:'faq',id:'qa-'+x.id,open:!!open},
+    el('summary',null,el('span',{class:'qa-meta',text:(LABEL[x.drink]||x.drink)+' · '+x.cat}),el('span',{class:'qa-q'},mark(x.q,qs))),
+    el('div',null,(x.a||[]).map(function(t){return el('p',null,mark(t,qs))}),
+      x.src&&x.src.length?el('p',{class:'qa-src'},'Źródła: ',x.src.map(function(s,i){return el('span',null,i?' · ':'',el('a',{href:s.u,target:'_blank',rel:'noopener',text:s.t}))})):null));
+}
+function render(){
+  if(!$('qa-list'))return;
+  var ch=$('qa-chips');ch.textContent='';
+  GROUPS.forEach(function(g){var n=g[0]==='all'?(data||[]).length:(data||[]).filter(function(x){return x._g===g[0]}).length;
+    ch.append(el('button',{class:'chip',type:'button','aria-pressed':String(filter===g[0]),text:g[1]+(data?' ('+n+')':''),onclick:function(){filter=g[0];render()}}))});
+  var qk=$('qa-quick');if(!qk.firstChild)QUICK.forEach(function(t){qk.append(el('button',{type:'button',text:t,onclick:function(){q=t;$('qa-q').value=t;ai={busy:false,ans:null,err:null,q:''};render()}}))});
+  qk.hidden=!!q;
+  var box=$('qa-list');box.textContent='';
+  if(!data){box.append(el('p',{class:'muted',text:loading?'Wczytuję bazę wiedzy…':'Nie udało się wczytać bazy wiedzy. Sprawdź internet i spróbuj ponownie.'}));$('qa-count').textContent='';renderAI([]);return}
+  var r=search(),qs=toks(q);
+  $('qa-count').textContent=r.ranked?(r.list.length?'Znaleziono '+r.list.length+(r.list.length===1?' odpowiedź':r.list.length<5?' odpowiedzi':' odpowiedzi')+'. Najtrafniejsze na górze.':'Brak pasujących odpowiedzi w bazie.'):data.length+' odpowiedzi w bazie. Wpisz pytanie albo wybierz temat.';
+  if(r.ranked){r.list.forEach(function(x,i){box.append(item(x,qs,i===0))})}
+  else{var cats={};r.list.forEach(function(x){var k=(filter==='all'?(LABEL[x.drink]||x.drink)+' · ':'')+x.cat;(cats[k]=cats[k]||[]).push(x)});
+    Object.keys(cats).forEach(function(k){box.append(el('div',{class:'qa-group'},el('h3',{text:k}),cats[k].map(function(x){return item(x,[],false)})))})}
+  renderAI(r.ranked?r.list:[]);
+}
+function renderAI(list){
+  var sec=$('qa-ai-sec'),box=$('qa-ai');var qs=toks(q);sec.hidden=qs.length<2&&!ai.ans;box.textContent='';if(sec.hidden)return;
+  box.append(el('h3',{text:list.length?'Nie ma tu dokładnie tego, czego szukasz?':'Zapytaj AI'}),
+    el('p',{class:'muted',style:'font-size:.9rem',text:'Claude odpowie na Twoje pytanie, opierając się na tej bazie wiedzy. Liczba pytań dziennie jest ograniczona.'}));
+  if(ai.ans&&ai.q===q){box.append(el('div',{class:'note cool ans',text:ai.ans.answer}));
+    var rel=(ai.ans.related||[]).map(function(id){return (data||[]).filter(function(x){return x.id===id})[0]}).filter(Boolean);
+    if(rel.length)box.append(el('p',{class:'qa-src'},'Przeczytaj też: ',rel.map(function(x,i){return el('span',null,i?' · ':'',el('a',{href:'#',text:x.q,onclick:function(ev){ev.preventDefault();q=x.q;$('qa-q').value=x.q;render()}}))})));
+    box.append(el('p',{class:'muted',style:'font-size:.8rem',text:'Odpowiedź wygenerowana przez AI. Przy pleśni, ciąży, lekach i dzieciach kieruj się ostrożnością.'}));return}
+  if(ai.err&&ai.q===q)box.append(el('p',{class:'muted',text:ai.err}));
+  box.append(el('button',{class:'btn',type:'button',text:ai.busy?'Myślę…':'Zapytaj: „'+q.slice(0,60)+(q.length>60?'…':'')+'”',disabled:ai.busy,onclick:function(){
+    if(!window.MC_AI||!window.MC_AI.post){ai.err='Brak połączenia z serwerem.';render();return}
+    ai={busy:true,ans:null,err:null,q:q};render();
+    window.MC_AI.post({action:'ask',question:q,ids:list.slice(0,6).map(function(x){return x.id})}).then(function(r){ai.busy=false;ai.ans=r;render()})
+      .catch(function(e){ai.busy=false;ai.err=e&&e.code==='rate_limited'?'Dzienny limit pytań do AI został wyczerpany. Spróbuj jutro.':e&&e.code==='ai_off'?'AI jest wyłączone – brak klucza w Supabase.':'Nie udało się uzyskać odpowiedzi. Spróbuj za chwilę.';render()});
+  }}));
+}
+function load(){
+  if(data||loading)return loading||Promise.resolve();
+  var cache=null;try{cache=JSON.parse(localStorage.getItem(KK))}catch(e){}
+  if(cache&&cache.d&&Date.now()-cache.t<TTL){data=index(cache.d);return Promise.resolve()}
+  function fromFile(){return fetch('faq.json',{cache:'no-cache'}).then(function(r){if(!r.ok)throw 0;return r.json()}).then(function(j){return j.faq||j})}
+  var remote=window.MC_AI&&window.MC_AI.post?window.MC_AI.post({action:'faq'}).then(function(j){if(!j.faq||!j.faq.length)throw 0;return j.faq}):Promise.reject(0);
+  loading=remote.catch(fromFile).then(function(list){data=index(list);try{localStorage.setItem(KK,JSON.stringify({t:Date.now(),d:list}))}catch(e){}})
+    .catch(function(){if(cache&&cache.d)data=index(cache.d)}).then(function(){loading=null;render()});
+  render();return loading;
+}
+function open(){
+  if(!opened){opened=true;var inp=$('qa-q'),t=null;inp.addEventListener('input',function(){clearTimeout(t);t=setTimeout(function(){q=inp.value.trim();render()},120)});
+    inp.addEventListener('keydown',function(ev){if(ev.key==='Enter'){q=inp.value.trim();render();inp.blur()}})}
+  load();render();
+}
+/* wyszukiwanie z innych działów: MC_QA.ask('grzybek przechowywanie') */
+function ask(text,f){if(window.MC_SHOW)window.MC_SHOW('pytania');filter=f||'all';q=text||'';var i=$('qa-q');if(i)i.value=q;render()}
+return {open:open,ask:ask,load:load};
+})();
+</script>
 </body>
 </html>
