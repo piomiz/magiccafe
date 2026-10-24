@@ -21,3 +21,7 @@ Terminy (nastaw, degustacja, butelkowanie, koniec F2) eksportują się do kalend
 Źródło prawdy: tabela `magiccafe.faq`. Kopia offline: `faq.json`. Pusta tabela wczytuje się sama z `faq.json` z GitHub Pages,
 więc żeby zaktualizować bazę: zmień `faq.json`, wypchnij, a potem w Supabase `truncate magiccafe.faq`.
 „Zapytaj AI” idzie przez akcję `ask` Edge Function (te same limity co ocena zdjęć).
+
+## Kawa → Sprzęt (Lelit Bianca + Fiorenzato F4 Nano)
+Ustawienia na start, profile łopatką, mapa mielenia, dziennik strzałów i harmonogram serwisu z przypomnieniami .ics (RRULE).
+Dane sprzętu są wbudowane w index.html (obiekt GEAR); daty serwisu i strzały w localStorage `aloha-kawa-gear-v1` (objęte kopią zapasową).
