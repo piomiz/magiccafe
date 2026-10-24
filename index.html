@@ -4511,7 +4511,7 @@ return {soon:soon,render:render,push:push};
 /* ---------- Pytania i odpowiedzi: baza wiedzy z Supabase (magiccafe.faq), kopia offline w faq.json ---------- */
 window.MC_QA=(function(){
 'use strict';
-var D=document,KK='magiccafe-faq-v1',TTL=6*36e5,data=null,loading=null,filter='all',q='',ai={busy:false,ans:null,err:null,q:''},opened=false;
+var D=document,KK='magiccafe-faq-v2',TTL=6*36e5,data=null,loading=null,filter='all',q='',ai={busy:false,ans:null,err:null,q:''},opened=false;
 function $(id){return D.getElementById(id)}
 function el(tag,a){var e=D.createElement(tag),k,i;if(a)for(k in a){var v=a[k];if(v==null||v===false)continue;if(k==='class')e.className=v;else if(k==='text')e.textContent=v;else if(k.slice(0,2)==='on')e.addEventListener(k.slice(2),v);else if(k==='value'||k==='disabled'||k==='hidden'||k==='open')e[k]=v;else e.setAttribute(k,v)}
   for(i=2;i<arguments.length;i++){var c=arguments[i];if(c==null||c===false)continue;if(Array.isArray(c))c.forEach(function(x){if(x)e.append(x)});else e.append(c)}return e}
