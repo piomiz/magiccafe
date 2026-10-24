@@ -493,7 +493,9 @@ input[type=text],input[type=number],input[type=date],select,textarea{border:2px 
 <style>
 /* karta nastawu, dziennik, historia, kopia, pytania */
 .kvgrid{display:grid;grid-template-columns:auto minmax(0,1fr);gap:7px 16px;margin:0}
-.kvgrid dt{color:var(--muted);font-size:.9rem}.kvgrid dd{margin:0;font-weight:600;overflow-wrap:anywhere}
+.kvgrid dt{color:var(--muted);font-size:.9rem}
+.kvstack{display:flex;flex-direction:column;gap:12px;margin:0}.kvstack dt{color:var(--muted);font-size:.86rem;font-weight:600}.kvstack dd{margin:2px 0 0;font-weight:600;overflow-wrap:anywhere}
+.kvstack dt+dd{margin-top:-8px}.kvgrid dd{margin:0;font-weight:600;overflow-wrap:anywhere}
 .formgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(9.5em,1fr));gap:12px}
 .card-form{display:flex;flex-direction:column;gap:12px}
 .evlist{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
@@ -2988,7 +2990,7 @@ function gDownload(txt,name){
   if(/Android/i.test(ua)&&file&&navigator.canShare&&navigator.canShare({files:[file]})){navigator.share({files:[file],title:'Serwis sprzętu'}).catch(function(){});return}
   var u=URL.createObjectURL(new Blob([txt],{type:'text/calendar;charset=utf-8'})),a=document.createElement('a');a.href=u;a.download=name;document.body.append(a);a.click();setTimeout(function(){URL.revokeObjectURL(u);a.remove()},5000);
 }
-function gkv(rows){return h('dl',{class:'kvgrid'},rows.map(function(r){return [h('dt',{text:r[0]}),h('dd',null,h('span',{text:r[1]}),r[2]?h('small',{class:'muted',style:'display:block;font-weight:400;font-size:.84rem',text:r[2]}):null)]}).reduce(function(a,b){return a.concat(b)},[]))}
+function gkv(rows){return h('dl',{class:'kvstack'},rows.map(function(r){return [h('dt',{text:r[0]}),h('dd',null,h('span',{text:r[1]}),r[2]?h('small',{class:'muted',style:'display:block;font-weight:400;font-size:.84rem',text:r[2]}):null)]}).reduce(function(a,b){return a.concat(b)},[]))}
 var GMETHODS=[['esp','Espresso'],['v60','V60'],['cold','Cold brew'],['batch','Przelew / ekspres przelewowy']];
 function renderGear(){
   var v=$('#view-sprzet');if(!v)return;v.textContent='';
