@@ -4762,5 +4762,78 @@ function ask(text,f){if(window.MC_SHOW)window.MC_SHOW('pytania');filter=f||'all'
 return {open:open,ask:ask,load:load};
 })();
 </script>
+<script>
+/* ---------- Gest i przycisk „wstecz”: cofa ekran (okno, zakładka, dział), a nie zamyka aplikacji ---------- */
+(function(){
+'use strict';
+var H=window.history,D=document,W=window;
+if(!H||!H.pushState||!W.MC_SHOW)return;
+var APPS=['store','kombucha','kawa','matcha','bar','pytania'];
+var rs=H.replaceState.bind(H),ps=H.pushState.bind(H);
+/* działy wołają replaceState(null,…) przy zmianie zakładki – zachowujemy nasz stan wpisu */
+H.replaceState=function(s,t,u){if(s==null&&H.state&&H.state.mcNav)s=H.state;return rs(s,t,u)};
+function root(a){return D.getElementById(a==='store'?'store':'app-'+a)}
+function curApp(){for(var i=0;i<APPS.length;i++){var e=root(APPS[i]);if(e&&!e.hidden)return APPS[i]}return 'store'}
+function curTab(a){var e=root(a),b=e&&e.querySelector('.tab[aria-current="page"]');return b?b.dataset.tab:''}
+function openDlg(){return D.querySelector('dialog[open]')}
+function snap(kind){var a=curApp();return {mcNav:1,kind:kind||'nav',app:a,tab:curTab(a),y:0}}
+function same(x,y){return !!(x&&y&&x.app===y.app&&x.tab===y.tab)}
+function url(){return location.href}
+function ext(o,p){var r={},k;for(k in o)r[k]=o[k];for(k in p)r[k]=p[k];return r}
+var lastY=W.scrollY||0,restoring=false,pendingBack=false,pendTimer=null,needRoot=false,q=false;
+var shown=snap(),dlgOpen=!!openDlg();
+W.addEventListener('scroll',function(){if(!restoring)lastY=W.scrollY},{passive:true});
+function remember(){var s=H.state;if(s&&s.mcNav)rs(ext(s,{y:lastY}),'',url())}
+
+/* start: wpis bieżącego ekranu; jeśli start nie na Półkach, „wstecz” najpierw wraca na Półki */
+if(H.state&&H.state.mcNav)rs(ext(shown,{y:H.state.y||0}),'',url());
+else{rs(shown,'',url());needRoot=shown.app!=='store'}
+function addRoot(){
+  if(!needRoot)return;needRoot=false;
+  var s=H.state;if(!s||!s.mcNav)return;
+  rs({mcNav:1,kind:'nav',app:'store',tab:'',y:0},'',url());ps(ext(s,{y:lastY}),'',url());
+}
+D.addEventListener('click',addRoot,true);D.addEventListener('keydown',addRoot,true);
+
+function check(){
+  q=false;if(restoring)return;
+  var d=!!openDlg();
+  if(d&&!dlgOpen){dlgOpen=true;remember();ps(ext(snap('dlg'),{y:lastY}),'',url());return}
+  if(!d&&dlgOpen){
+    dlgOpen=false;
+    if(H.state&&H.state.kind==='dlg'){
+      pendingBack=true;clearTimeout(pendTimer);
+      pendTimer=setTimeout(function(){if(pendingBack){pendingBack=false;check()}},700);
+      H.back();return;
+    }
+  }
+  if(pendingBack)return;
+  var s=snap();if(same(s,shown))return;
+  remember();ps(s,'',url());shown=s;
+}
+new MutationObserver(function(){if(!q){q=true;Promise.resolve().then(check)}})
+  .observe(D.body,{subtree:true,attributes:true,attributeFilter:['hidden','aria-current','open']});
+
+W.addEventListener('popstate',function(ev){
+  var e=ev.state;
+  if(pendingBack){
+    /* to my cofnęliśmy wpis okna zamkniętego przyciskiem; jeśli w międzyczasie zmienił się ekran, dopisz go */
+    pendingBack=false;clearTimeout(pendTimer);
+    var s=snap();if(!same(s,e)){ps(s,'',url())}shown=s;return;
+  }
+  if(!e||!e.mcNav)return;
+  restoring=true;
+  var d=openDlg();
+  if(d){try{d.close()}catch(x){d.removeAttribute('open')}}
+  if(!same(snap(),e)){
+    W.MC_SHOW(e.app,true);
+    if(e.tab){var r=root(e.app),b=r&&r.querySelector('.tab[data-tab="'+e.tab+'"]');if(b&&b.getAttribute('aria-current')!=='page')b.click()}
+  }
+  shown=snap();dlgOpen=!!openDlg();
+  var y=e.y||0;
+  requestAnimationFrame(function(){W.scrollTo(0,y);lastY=y;setTimeout(function(){restoring=false},50)});
+});
+})();
+</script>
 </body>
 </html>
