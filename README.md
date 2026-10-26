@@ -25,3 +25,11 @@ więc żeby zaktualizować bazę: zmień `faq.json`, wypchnij, a potem w Supabas
 ## Kawa → Sprzęt (Lelit Bianca + Fiorenzato F4 Nano)
 Ustawienia na start, profile łopatką, mapa mielenia, dziennik strzałów i harmonogram serwisu z przypomnieniami .ics (RRULE).
 Dane sprzętu są wbudowane w index.html (obiekt GEAR); daty serwisu i strzały w localStorage `aloha-kawa-gear-v1` (objęte kopią zapasową).
+
+## Kawa → Palarnie (wyszukiwarka kaw z lokalnych palarni)
+Kawy z polskich palarni (speciality i klasycznych) z ceną za 100 g, limitowanymi seriami, nowościami i linkiem do sklepu palarni.
+„Przyrządź” ustawia kawę w zakładce Ziarno (kraj, palenie, obróbka, palarnia), więc przepisy dopasowują się same.
+Dane: tabele `magiccafe.roasters` i `magiccafe.coffees`. Oferty pobiera Edge Function `magiccafe-sync`
+(Shopify `/products.json`, WooCommerce Store API), uruchamiana przez pg_cron `magiccafe-sync-palarnie` co 10 minut po 2 palarnie,
+każda palarnia raz na ok. 20 h. Wyszukiwanie: akcja `coffees` w funkcji `magiccafe`.
+Kod: `supabase/functions/magiccafe-sync/index.ts`. Palarnia, która nie chce być na liście: `consent_status = 'odmowa'` w `magiccafe.roasters`.

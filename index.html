@@ -527,6 +527,36 @@ input[type=text],input[type=number],input[type=date],select,textarea{border:2px 
 .qa mark{background:var(--mango-soft);color:inherit;border-radius:3px;padding:0 2px}
 .qa-ai{display:flex;flex-direction:column;gap:10px}
 .qa-ai .ans{white-space:pre-wrap}
+/* PALARNIE: półka lokalnych palarni. Karta kawy jak kaseta na półce: cena za 100 g na wyświetlaczu OSD, naklejki LIMIT / NOWOŚĆ / DOBRA CENA. */
+.tabs[style*="--tabs:8"] .tab span{white-space:nowrap}
+@media (max-width:859px){ .tabs[style*="--tabs:8"] .tab{font-size:.5rem;padding-inline:0;letter-spacing:-.01em} .tabs[style*="--tabs:8"] .tab svg{width:20px;height:20px} }
+.shop-search{display:flex;gap:10px;flex-wrap:wrap;align-items:stretch}
+.shop-search input[type=search]{flex:1 1 150px;min-width:0;min-height:48px;border:2px solid var(--ink);border-radius:4px;background:#fff;color:#15153A;padding:10px 12px;font-size:1rem}
+.shop-filters{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,8.5em),1fr));gap:12px}
+.shop-toggles{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.shop-count{font-family:var(--osd);font-size:1.25rem;letter-spacing:.03em;color:var(--lagoon)}
+.shop-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,290px),1fr));gap:18px}
+.bag{position:relative;background:var(--surface);border:2px solid var(--ink);border-radius:var(--r-lg);box-shadow:5px 5px 0 var(--lagoon);padding:16px 16px 14px;display:flex;flex-direction:column;gap:10px;min-width:0}
+.bag.lim{box-shadow:5px 5px 0 var(--hibiscus)}
+.bag-roaster{display:flex;justify-content:space-between;gap:10px;align-items:baseline;font-size:.82rem;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.05em}
+.bag-roaster b{color:var(--ink);overflow-wrap:anywhere}
+.bag-roaster span{flex:none;text-transform:none;letter-spacing:0;font-weight:600}
+.bag h3{font-size:1.06rem;line-height:1.25;overflow-wrap:anywhere}
+.bag-meta{font-size:.88rem;color:var(--muted)}
+.bag-tags{display:flex;flex-wrap:wrap;gap:6px}
+.tag{display:inline-flex;align-items:center;border:1.5px solid var(--ink);border-radius:3px;padding:2px 7px;font-size:.66rem;font-weight:800;letter-spacing:.07em;text-transform:uppercase;background:var(--surface);color:var(--ink)}
+.tag.t-lim{background:var(--hibiscus);color:#FFFBE0} .tag.t-new{background:var(--mango)} .tag.t-deal{background:var(--palm-soft);color:var(--ok)} .tag.t-loc{background:var(--lagoon);color:#FFFBE0} .tag.t-kl{background:var(--surface-2)}
+.bag-price{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:2px 10px;background:var(--night);color:var(--osd-yellow);border-radius:4px;padding:8px 12px;margin-top:auto}
+.bag-price .p,.bag-price .pk{white-space:nowrap} .bag-price .p{font-family:var(--osd);font-size:1.7rem;line-height:1;letter-spacing:.02em}
+.bag-price .p small{font-size:1rem;color:var(--osd-dim)}
+.bag-price .pk{font-family:var(--osd);font-size:1.05rem;color:var(--osd-green);text-align:right}
+.bag-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.bag-actions .btn{font-size:.9rem;padding:9px 8px;text-decoration:none;text-align:center}
+.shop-more{align-self:center}
+#kawa-label-out,#label-out{scroll-margin-top:150px}
+.shop-msg{border:2px dashed var(--ink);border-radius:var(--r-lg);padding:22px;display:flex;flex-direction:column;gap:10px;align-items:flex-start}
+.shop-skel{height:220px;border:2px solid var(--line);border-radius:var(--r-lg);background:repeating-linear-gradient(-45deg,var(--surface),var(--surface) 12px,var(--surface-2) 12px,var(--surface-2) 24px)}
+@media (prefers-reduced-motion:no-preference){ .shop-skel{animation:skel 1.4s linear infinite;background-size:200% 100%} @keyframes skel{to{background-position:-68px 0}} }
 </style>
 </head>
 <body>
@@ -818,8 +848,9 @@ input[type=text],input[type=number],input[type=date],select,textarea{border:2px 
       </svg>
       <span>Aloha Kawa</span>
     </div>
-    <nav class="tabs" style="--tabs:7" aria-label="Widoki">
+    <nav class="tabs" style="--tabs:8" aria-label="Widoki">
       <button class="tab" data-tab="ziarno"><svg viewBox="0 0 24 24" aria-hidden="true"><ellipse cx="12" cy="12" rx="6" ry="8.5" transform="rotate(30 12 12)"/><path d="M9.5 5.5c4 3.5-1.5 8 5 13"/></svg><span>Ziarno</span></button>
+      <button class="tab" data-tab="palarnie"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 7V6a5 5 0 0 1 10 0v1M5 7h14l-1 13H6zM9.5 12c1.5 1.2 3.5 1.2 5 0"/></svg><span>Palarnie</span></button>
       <button class="tab" data-tab="esp"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 9h11v4a5 5 0 0 1-5 5h-1a5 5 0 0 1-5-5zM16 10h2a2 2 0 0 1 0 4h-2M4 21h13"/></svg><span>Espresso</span></button>
       <button class="tab" data-tab="v60"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16l-6 9h-4zM8 20h8M12 15v5"/></svg><span>V60</span></button>
       <button class="tab" data-tab="cold"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4h10l-1.5 16h-7zM7.6 10h8.8"/></svg><span>Cold brew</span></button>
@@ -963,6 +994,7 @@ input[type=text],input[type=number],input[type=date],select,textarea{border:2px 
     </section>
   </main>
 
+  <main class="view" id="kawa-view-palarnie" hidden></main>
   <main class="view" id="kawa-view-esp" hidden></main>
   <main class="view" id="kawa-view-v60" hidden></main>
   <main class="view" id="kawa-view-cold" hidden></main>
@@ -2447,7 +2479,7 @@ function start(){
 (function(){
 App.key='aloha-kawa-v1';
 load({origin:'mix',roast:'medium',proc:'washed',label:{name:'',roaster:'',region:'',variety:'',alt:0,date:'',best:'',notes:'',use:'',decaf:false,robusta:false,note:'',read:0,reco:null},esp:{dose:18,p:33},v60:{dose:20,p:75,recipe:'kasuya-46',sweet:'bal'},cold:{dose:100,p:40},batch:{dose:1,p:35}});
-App.tabs=['ziarno','esp','v60','cold','batch','sprzet','wiedza'];
+App.tabs=['ziarno','palarnie','esp','v60','cold','batch','sprzet','wiedza'];
 App.selectors=[
   {key:'origin',label:'Kraj',type:'select',groups:[['',[['mix','Mieszanka / nie wiem']]],
     ['Ameryka Południowa',[['br','Brazylia'],['co','Kolumbia'],['pe','Peru']]],
@@ -2733,7 +2765,7 @@ function renderHome(){
   box.textContent='';
   box.append(h('span',{class:'eyebrow',text:'Przepisy dla tej kawy'}),
     h('dl',{class:'kv'},[['Espresso',ESP],['V60',V60],['Cold brew',COLD],['Przelew',BATCH]].map(function(m){return [h('dt',{text:m[0]}),h('dd',{text:m[1].last.sum})]}).reduce(function(a,b){return a.concat(b)},[])),
-    h('div',{class:'row'},h('button',{class:'btn',type:'button','data-go':'esp',text:'Parzę espresso'}),h('button',{class:'btn ghost',type:'button','data-go':'v60',text:'Parzę V60'})));
+    h('div',{class:'row'},h('button',{class:'btn',type:'button','data-go':'esp',text:'Parzę espresso'}),h('button',{class:'btn ghost',type:'button','data-go':'v60',text:'Parzę V60'}),h('button',{class:'btn ghost',type:'button','data-go':'palarnie',text:'Kup kawę z palarni'})));
   $('#roast-title').textContent=x.R.n;kv($('#roast-kv'),x.R.kv);meters($('#roast-meters'),tm(x.R.A,x.R.S,x.R.B,x.R.Bo));
   $('#proc-title').textContent=x.P.n;kv($('#proc-kv'),x.P.kv);
   $('#origin-title').textContent=x.O.n;kv($('#origin-kv'),x.O.kv);meters($('#origin-meters'),tm(5+x.O.A,7+x.O.S,4+(x.O.B||0),6+x.O.Bo));$('#origin-fact').textContent=x.O.fact;
@@ -3101,6 +3133,135 @@ function renderService(v){
         h('p',{class:'muted',style:'font-size:.84rem',text:'Po zmianie dat albo częstotliwości dodaj plik ponownie. Wydarzenia mają stałe identyfikatory, więc kalendarz je zaktualizuje zamiast dublować (Apple i Outlook; w Google czasem trzeba usunąć stare).'})))));
 }
 App.extras.push(renderGear);
+/* ---------- PALARNIE: wyszukiwarka kaw z lokalnych palarni ----------
+   Dane: Edge Function "magiccafe", akcja "coffees" (oferty odświeża raz dziennie funkcja magiccafe-sync).
+   "Przyrządź" przenosi kawę do Ziarna (kraj, palenie, obróbka, palarnia), więc przepisy dopasowują się same. */
+var SHOP={q:'',method:'',kind:'',country:'',region:'',roaster:'',max100:'',limited:false,fresh:false,sort:'polecane',items:[],total:0,busy:false,err:null,facets:null,stats:null,seq:0,built:false,loaded:false,timer:null};
+var SHOP_KEY='aloha-kawa-shop-v1';
+(function(){try{var v=JSON.parse(localStorage.getItem(SHOP_KEY));if(v&&typeof v==='object')['method','kind','region','sort','max100'].forEach(function(k){if(typeof v[k]==='string')SHOP[k]=v[k]})}catch(e){}})();
+function shopKeep(){try{localStorage.setItem(SHOP_KEY,JSON.stringify({method:SHOP.method,kind:SHOP.kind,region:SHOP.region,sort:SHOP.sort,max100:SHOP.max100}))}catch(e){}}
+var SHOP_C2O={'Brazylia':'br','Kolumbia':'co','Peru':'pe','Gwatemala':'gt','Kostaryka':'cr','Honduras':'hn','Salwador':'sv','Nikaragua':'ni','Panama':'pa','Meksyk':'mx','Jamajka':'jm','Etiopia':'et','Kenia':'ke','Rwanda':'rw','Burundi':'rw','Tanzania':'tz','Jemen':'ye','Indonezja':'id','Wietnam':'vn','Indie':'in'};
+var SHOP_P2K={'myta':'washed','naturalna':'natural','honey':'honey','anaerobowa':'anaer','maceracja węglowa':'carbonic','kofermentacja':'cofer','wet hulled':'wet'};
+var SHOP_R2K={'jasne':'light','średnie':'medium','ciemne':'dark'};
+function shopMoney(n){return Number(n).toLocaleString('pl-PL',{minimumFractionDigits:2,maximumFractionDigits:2}).replace(/,00$/,'')}
+function shopW(g){return g>=1000?nf(g/1000,2)+' kg':g+' g'}
+function shopPl(n,a,b,c){if(n===1)return a;var d=n%10,dd=n%100;return d>=2&&d<=4&&!(dd>=12&&dd<=14)?b:c}
+function shopSafeUrl(u){return typeof u==='string'&&/^https?:\/\//i.test(u)?u:null}
+
+function shopQuery(more){
+  var my=++SHOP.seq;SHOP.busy=true;SHOP.err=null;if(!more)SHOP.items=[];shopPaint();
+  if(!window.MC_AI||!window.MC_AI.post){SHOP.busy=false;SHOP.err='Wyszukiwarka potrzebuje połączenia z bazą Magic Cafe.';shopPaint();return}
+  window.MC_AI.post({action:'coffees',q:SHOP.q,method:SHOP.method,kind:SHOP.kind,country:SHOP.country,region:SHOP.region,roaster:SHOP.roaster,
+      max100:+SHOP.max100||0,limited:SHOP.limited,fresh:SHOP.fresh,sort:SHOP.sort,limit:24,offset:more?SHOP.items.length:0,facets:!SHOP.facets})
+    .then(function(j){
+      if(my!==SHOP.seq)return;SHOP.busy=false;SHOP.loaded=true;
+      if(j.facets){SHOP.facets=j.facets;SHOP.stats=j.stats||null;shopFacets()}
+      SHOP.items=(more?SHOP.items:[]).concat(j.items||[]);SHOP.total=j.total||0;shopPaint();
+    })
+    .catch(function(){if(my!==SHOP.seq)return;SHOP.busy=false;SHOP.err='Nie udało się połączyć z bazą palarni. Sprawdź internet i spróbuj ponownie.';shopPaint()});
+}
+function shopSoon(){clearTimeout(SHOP.timer);SHOP.timer=setTimeout(function(){shopQuery(false)},350)}
+
+function shopBrew(c){
+  var st=App.state,L=st.label,r=c.roaster||{};
+  st.origin=SHOP_C2O[c.country]||'mix';
+  st.roast=SHOP_R2K[c.roast]||(c.filter&&!c.espresso?'light':'medium');
+  st.proc=SHOP_P2K[c.process]||'washed';
+  L.name=String(c.name||'').slice(0,60);L.roaster=String(r.name||'').slice(0,60);L.region='';L.variety='';L.alt=0;L.date='';L.best='';L.notes='';
+  L.use=c.espresso&&!c.filter?'espresso':c.filter&&!c.espresso?'przelew':c.filter&&c.espresso?'uniwersalna':'';
+  L.decaf=!!c.decaf;L.robusta=/robusta/i.test(String(c.name||''));L.note='';L.read=0;L.reco=null;
+  if(st.v60&&st.v60.recipe==='roaster')st.v60.recipe='kasuya-46';
+  if(L.roaster&&window.MC_AI)window.MC_AI.roaster(L.roaster).then(function(rows){var v=rows.filter(function(q){return q.method==='v60'})[0]||rows[0];if(v&&!App.state.label.reco&&App.state.label.roaster===L.roaster){App.state.label.reco=labReco({metoda:v.method,kawa_g:v.dose_g,woda_g:v.water_g,temp_c:v.temp_c,czas_s:v.total_s,mielenie:v.grind_text,opis:v.notes||('Przepis palarni '+v.roaster+(v.coffee?' dla '+v.coffee:'')),pours:v.pours});if(App.state.label.reco&&App.state.label.reco.method==='v60')App.state.v60.recipe='roaster';save();renderAll()}});
+  LAB.inputsSynced=false;save();renderAll();go('ziarno');
+  var known=[c.country&&SHOP_C2O[c.country]?'kraj':'',c.roast?'palenie':'',c.process&&SHOP_P2K[c.process]?'obróbka':''].filter(Boolean);
+  labHint('Kawa z palarni '+L.roaster+'. '+(known.length?'Ze sklepu znam: '+known.join(', ')+'. ':'')+'Resztę ustaw u góry strony albo zrób zdjęcie etykiety, gdy paczka przyjdzie: data palenia i nuty dopracują przepis.');
+  var o=$('#label-out');if(o)setTimeout(function(){o.scrollIntoView({behavior:window.matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth',block:'start'})},60);
+}
+
+function shopCard(c){
+  var r=c.roaster||{},url=shopSafeUrl(c.url);
+  var meta=[c.country,c.process,c.roast?c.roast+' palenie':'',c.espresso&&c.filter?'espresso i przelew':c.espresso?'do espresso':c.filter?'do przelewu':'',c.decaf?'bezkofeinowa':''].filter(Boolean).join(' · ');
+  var tags=[c.limited?['t-lim','Limitowana']:null,c.isNew?['t-new','Nowość']:null,c.deal?['t-deal','Dobra cena']:null,r.local?['t-loc','Lokalnie']:null,r.kind==='klasyczna'?['t-kl','Klasyczna palarnia']:null].filter(Boolean);
+  var price=c.p100!=null?h('span',{class:'p'},shopMoney(c.p100)+' zł',h('small',{text:' /100 g'})):h('span',{class:'p',text:c.price!=null?shopMoney(c.price)+' zł':'cena w sklepie'});
+  var pack=c.price!=null&&c.weight_g?shopMoney(c.price)+' zł · '+shopW(c.weight_g):c.weight_g?shopW(c.weight_g):'';
+  return h('article',{class:'bag'+(c.limited?' lim':'')},
+    h('div',{class:'bag-roaster'},h('b',{text:r.name||'Palarnia'}),h('span',{text:r.city||''})),
+    h('h3',{text:c.name}),
+    meta?h('p',{class:'bag-meta',text:meta}):null,
+    tags.length?h('div',{class:'bag-tags'},tags.map(function(t){return h('span',{class:'tag '+t[0],text:t[1]})})):null,
+    h('div',{class:'bag-price'},price,h('span',{class:'pk',text:pack})),
+    h('div',{class:'bag-actions'},
+      url?h('a',{class:'btn',href:url,target:'_blank',rel:'noopener','aria-label':'Zamów '+c.name+' w palarni '+(r.name||'')+' (otwiera sklep palarni)',text:'Zamów'}):h('span',{class:'btn ghost',text:'Brak linku'}),
+      h('button',{class:'btn ghost',type:'button','aria-label':'Przyrządź '+c.name+': ustaw tę kawę w Ziarnie i dobierz przepis',text:'Przyrządź',onclick:function(){shopBrew(c)}})));
+}
+
+function shopFacets(){
+  var f=SHOP.facets;if(!f)return;
+  function fill(id,first,list,lab,val){var s=$(id);if(!s)return;var cur=s.value;s.textContent='';s.append(h('option',{value:'',text:first}));
+    list.forEach(function(x){s.append(h('option',{value:val(x),text:lab(x)}))});s.value=cur;if(s.value!==cur)s.value=''}
+  fill('#shop-country','Każdy kraj',f.countries||[],function(x){return (x.v==='mieszanka'?'Mieszanki':x.v)+' ('+x.n+')'},function(x){return x.v});
+  fill('#shop-region','Cała Polska',f.regions||[],function(x){return x.v+' ('+x.n+' '+shopPl(x.n,'palarnia','palarnie','palarni')+')'},function(x){return x.v});
+  fill('#shop-roaster','Każda palarnia',f.roasters||[],function(x){return x.name+(x.city?' · '+x.city:'')+' ('+x.n+')'},function(x){return x.slug});
+  $('#shop-country').value=SHOP.country;$('#shop-region').value=SHOP.region;$('#shop-roaster').value=SHOP.roaster;
+  var st=SHOP.stats,lede=$('#shop-lede');
+  if(st&&lede)lede.textContent=st.coffees+' '+shopPl(st.coffees,'kawa','kawy','kaw')+' z '+st.roasters+' '+shopPl(st.roasters,'polskiej palarni','polskich palarni','polskich palarni')+': od mikrolotów speciality po klasyczne kawy z sąsiedztwa. Ceny i dostępność odświeżają się codziennie, a zamówienie składasz bezpośrednio w palarni.';
+}
+
+function shopReset(){SHOP.q='';SHOP.method='';SHOP.kind='';SHOP.country='';SHOP.region='';SHOP.roaster='';SHOP.max100='';SHOP.limited=false;SHOP.fresh=false;SHOP.sort='polecane';shopKeep();shopSync();shopQuery(false)}
+function shopSync(){
+  var q=$('#shop-q');if(q)q.value=SHOP.q;
+  $$('#shop-method button').forEach(function(b){b.setAttribute('aria-pressed',String(b.dataset.v===SHOP.method))});
+  $('#shop-lim').setAttribute('aria-pressed',String(SHOP.limited));$('#shop-new').setAttribute('aria-pressed',String(SHOP.fresh));
+  ['kind','country','region','roaster','max100','sort'].forEach(function(k){var s=$('#shop-'+k);if(s)s.value=SHOP[k]});
+}
+
+function shopPaint(){
+  var grid=$('#shop-grid'),cnt=$('#shop-count'),msg=$('#shop-msg'),more=$('#shop-more');if(!grid)return;
+  msg.hidden=true;msg.textContent='';more.hidden=true;
+  if(SHOP.err){grid.textContent='';cnt.textContent='';msg.hidden=false;
+    msg.append(h('h3',{text:'Brak połączenia z półką'}),h('p',{text:SHOP.err}),h('button',{class:'btn',type:'button',text:'Spróbuj ponownie',onclick:function(){shopQuery(false)}}));return}
+  if(SHOP.busy&&!SHOP.items.length){cnt.textContent='Szukam w palarniach…';grid.textContent='';for(var i=0;i<6;i++)grid.append(h('div',{class:'shop-skel','aria-hidden':'true'}));return}
+  if(!SHOP.items.length){grid.textContent='';cnt.textContent='0 kaw';msg.hidden=false;
+    msg.append(h('h3',{text:'Nic nie pasuje do tych filtrów'}),h('p',{text:'Usuń któryś filtr albo wpisz krótsze hasło, np. sam kraj lub nazwę palarni.'}),h('button',{class:'btn ghost',type:'button',text:'Wyczyść filtry',onclick:shopReset}));return}
+  cnt.textContent=SHOP.total+' '+shopPl(SHOP.total,'kawa','kawy','kaw')+(SHOP.sort==='polecane'?' · polecane na dziś, zmieniają się codziennie':SHOP.sort==='cena'?' · od najtańszej za 100 g':' · od najnowszej');
+  grid.textContent='';SHOP.items.forEach(function(c){grid.append(shopCard(c))});
+  if(SHOP.items.length<SHOP.total){more.hidden=false;more.disabled=SHOP.busy;more.textContent=SHOP.busy?'Wczytuję…':'Pokaż kolejne kawy'}
+}
+
+function shopBuild(){
+  var v=$('#view-palarnie');if(!v||SHOP.built)return;SHOP.built=true;v.textContent='';
+  function sel(id,label,opts){var s=h('select',{id:'shop-'+id});opts.forEach(function(o){s.append(h('option',{value:o[0],text:o[1]}))});
+    s.addEventListener('change',function(){SHOP[id]=s.value;shopKeep();shopQuery(false)});return h('div',{class:'field'},h('label',{for:'shop-'+id,text:label}),s)}
+  var q=h('input',{type:'search',id:'shop-q',placeholder:'np. Etiopia, HAYB, Gdańsk',autocomplete:'off',enterkeyhint:'search','aria-label':'Szukaj kawy'});
+  q.addEventListener('input',function(){SHOP.q=q.value.trim();shopSoon()});
+  q.addEventListener('keydown',function(e){if(e.key==='Enter'){e.preventDefault();SHOP.q=q.value.trim();clearTimeout(SHOP.timer);shopQuery(false)}});
+  var seg=h('div',{class:'seg',id:'shop-method',role:'group','aria-label':'Metoda parzenia'});
+  [['','Każda metoda'],['espresso','Espresso'],['filter','Przelew']].forEach(function(m){seg.append(h('button',{type:'button','data-v':m[0],text:m[1],onclick:function(){SHOP.method=m[0];shopKeep();shopSync();shopQuery(false)}}))});
+  var lim=h('button',{class:'chip',type:'button',id:'shop-lim',text:'Limitowane serie',onclick:function(){SHOP.limited=!SHOP.limited;shopSync();shopQuery(false)}});
+  var nw=h('button',{class:'chip',type:'button',id:'shop-new',text:'Nowości',onclick:function(){SHOP.fresh=!SHOP.fresh;shopSync();shopQuery(false)}});
+  v.append(
+    h('section',{class:'sec'},h('div',{class:'sec-head'},h('p',{class:'eyebrow',text:'Lokalne palarnie'}),h('h1',{text:'Kawa prosto z palarni.'}),
+      h('p',{class:'lede',id:'shop-lede',text:'Kawy z polskich palarni w jednym miejscu: od mikrolotów speciality po klasyczne kawy z sąsiedztwa. Zamówienie składasz bezpośrednio w palarni.'}))),
+    h('section',{class:'sec'},h('div',{class:'panel'},
+      h('div',{class:'shop-search'},q,h('button',{class:'btn',type:'button',text:'Szukaj',onclick:function(){SHOP.q=q.value.trim();clearTimeout(SHOP.timer);shopQuery(false)}})),
+      h('div',{class:'shop-toggles'},seg,lim,nw),
+      h('div',{class:'shop-filters'},
+        sel('kind','Rodzaj palarni',[['','Wszystkie'],['speciality','Speciality'],['klasyczna','Klasyczne lokalne']]),
+        sel('country','Kraj',[['','Każdy kraj']]),sel('region','Województwo',[['','Cała Polska']]),sel('roaster','Palarnia',[['','Każda palarnia']]),
+        sel('max100','Cena za 100 g',[['','Bez limitu'],['15','do 15 zł'],['20','do 20 zł'],['25','do 25 zł'],['30','do 30 zł'],['40','do 40 zł']]),
+        sel('sort','Kolejność',[['polecane','Polecane na dziś'],['cena','Najtańsze za 100 g'],['nowe','Najnowsze']])),
+      h('button',{class:'btn ghost small',type:'button',style:'align-self:flex-start',text:'Wyczyść filtry',onclick:shopReset}))),
+    h('section',{class:'sec','aria-live':'polite'},h('p',{class:'shop-count',id:'shop-count'}),h('div',{class:'shop-grid',id:'shop-grid'}),
+      h('div',{class:'shop-msg',id:'shop-msg',hidden:true}),
+      h('button',{class:'btn ghost shop-more',type:'button',id:'shop-more',hidden:true,text:'Pokaż kolejne kawy',onclick:function(){shopQuery(true)}})),
+    h('p',{class:'muted',style:'font-size:.85rem;max-width:68ch',text:'Ceny i dostępność pobieramy ze sklepów palarni raz dziennie, więc w sklepie mogą się już różnić. Cena za 100 g jest liczona dla najmniejszej paczki. „Dobra cena” oznacza najtańszą ćwiartkę kaw w swojej grupie. „Przyrządź” ustawia tę kawę w zakładce Ziarno i dobiera do niej przepis.'}));
+  shopSync();shopPaint();
+  function ensure(){if(!v.hidden&&!SHOP.loaded&&!SHOP.busy)shopQuery(false)}
+  try{new MutationObserver(ensure).observe(v,{attributes:true,attributeFilter:['hidden']})}catch(e){}
+  setTimeout(ensure,0);
+}
+App.extras.push(shopBuild);
+
 
 start();
 if(window.__magic)window.__magic.kawa={methods:App.methods,more:BATCH.more.items,go:go};

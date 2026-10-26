@@ -9,6 +9,9 @@
 //   {action:"ask", question:"...", ids:["k-..."]} -> krótka odpowiedź AI oparta na bazie FAQ
 //   {action:"journal_put", code:"16 znaków", data:{...}} -> kopia zapasowa dziennika
 //   {action:"journal_get", code:"16 znaków"}   -> odczyt kopii zapasowej
+//   {action:"coffees", q, method:"filter|espresso", country, kind:"speciality|klasyczna", region, roaster,
+//    max100, limited, fresh, sort:"polecane|cena|nowe", limit, offset, facets} -> kawy z lokalnych palarni
+//   (oferty zbiera funkcja magiccafe-sync do magiccafe.coffees / magiccafe.roasters)
 //   (pusta tabela magiccafe.faq wczytuje się sama z https://piomiz.github.io/magiccafe/faq.json – aby odświeżyć bazę: truncate magiccafe.faq)
 // Sekrety: ANTHROPIC_API_KEY (wymagany do vision), ANTHROPIC_MODEL (opcjonalny),
 //          MC_DAILY_LIMIT (globalny dzienny, domyślnie 150), MC_CLIENT_LIMIT (na klienta, domyślnie 25)
@@ -96,6 +99,72 @@ Deno.serve(async (req) => {
       return json({ recipes: rows });
     }
 
+
+    if (action === "coffees") {
+      const s = (v: unknown, n = 60) => String(v ?? "").trim().slice(0, n);
+      const words = s(body.q, 80).toLowerCase().split(/\s+/).filter((w) => w.length >= 2).slice(0, 5);
+      const method = s(body.method, 10), country = s(body.country), kind = s(body.kind, 12), region = s(body.region, 30), roaster = s(body.roaster, 80);
+      const max100 = Number(body.max100) > 0 ? Math.min(Number(body.max100), 1000) : 0;
+      const sort = ["cena", "nowe", "polecane"].includes(String(body.sort)) ? String(body.sort) : "polecane";
+      const limit = Math.min(Math.max(parseInt(body.limit ?? 24, 10) || 24, 1), 60);
+      const offset = Math.min(Math.max(parseInt(body.offset ?? 0, 10) || 0, 0), 2000);
+      const T = sql`true`;
+      const and = (cond: boolean, frag: any) => (cond ? sql`and ${frag}` : sql``);
+      const wordsFrag = words.reduce((acc: any, w) => {
+        const like = "%" + w + "%";
+        return sql`${acc} and (lower(a.name) like ${like} or lower(a.rname) like ${like} or lower(coalesce(a.city,'')) like ${like} or lower(coalesce(a.origin_country,'')) like ${like} or lower(coalesce(a.process,'')) like ${like})`;
+      }, sql``);
+      const rows = await sql`
+        with first as (select roaster_id, min(first_seen_at) t from magiccafe.coffees group by 1),
+        allc as (
+          select c.*, r.slug rslug, r.name rname, r.city, r.region, r.segment, r.is_local,
+                 -- cena za 100 g tylko gdy wiarygodna: 6–100 zł i nie podejrzanie tania mała paczka (zwykle cena próbki lub wariantu hurtowego)
+                 coalesce(c.price_per_100g between 6 and 100 and not (coalesce(c.weight_g, 0) <= 250 and c.price_per_100g < 10), true) price_ok,
+                 case when c.price_per_100g between 6 and 100 and not (coalesce(c.weight_g, 0) <= 250 and c.price_per_100g < 10) then c.price_per_100g end p100,
+                 (c.first_seen_at > f.t + interval '1 day' and c.first_seen_at > now() - interval '21 days') is_new,
+                 coalesce((c.raw->>'decaf')::boolean, false) decaf
+          from magiccafe.coffees c join magiccafe.roasters r on r.id = c.roaster_id join first f on f.roaster_id = c.roaster_id
+          where c.available and r.active and r.consent_status <> 'odmowa'),
+        thr as (select segment = 'klasyczna' klas, percentile_cont(0.25) within group (order by p100) q from allc where p100 is not null group by 1),
+        base as (
+          select a.*, (a.p100 is not null and a.p100 <= t.q) deal from allc a left join thr t on t.klas = (a.segment = 'klasyczna')
+          where ${T} ${wordsFrag}
+            ${and(method === "filter", sql`a.for_filter`)} ${and(method === "espresso", sql`a.for_espresso`)}
+            ${and(!!country, sql`a.origin_country = ${country}`)}
+            ${and(kind === "speciality", sql`a.segment in ('speciality','mieszana')`)} ${and(kind === "klasyczna", sql`a.segment in ('klasyczna','mieszana')`)}
+            ${and(!!region, sql`a.region = ${region}`)} ${and(!!roaster, sql`a.rslug = ${roaster}`)}
+            ${and(max100 > 0, sql`a.p100 <= ${max100}`)} ${and(!!body.limited, sql`a.is_limited`)} ${and(!!body.fresh, sql`a.is_new`)}),
+        scored as (
+          select b.*, (b.is_limited::int * 3 + b.is_new::int * 2 + b.deal::int * 2 + (b.origin_country is not null)::int + (b.p100 is not null)::int
+                 + ('x' || substr(md5(b.id::text || current_date::text), 1, 6))::bit(24)::int / 16777215.0 * 2.5) score
+          from base b),
+        ranked as (select s.*, row_number() over (partition by s.rslug order by s.score desc) rn, count(*) over () total from scored s)
+        select id, name, url, origin_country, process, roast_level, for_filter, for_espresso, weight_g, case when price_ok then price_pln end price_pln, p100, is_limited, is_new, deal, decaf,
+               rslug, rname, city, region, segment, is_local, total, first_seen_at
+        from ranked
+        order by
+          ${sort === "cena" ? sql`p100 asc nulls last, price_pln asc nulls last` : sort === "nowe" ? sql`first_seen_at desc, score desc` : sql`(rn > 2), score desc`}
+        limit ${limit} offset ${offset}`;
+      const items = rows.map((r: any) => ({
+        id: r.id, name: r.name, url: r.url, country: r.origin_country, process: r.process, roast: r.roast_level,
+        filter: r.for_filter, espresso: r.for_espresso, weight_g: r.weight_g, price: r.price_pln == null ? null : Number(r.price_pln),
+        p100: r.p100 == null ? null : Number(r.p100), limited: r.is_limited, isNew: r.is_new, deal: r.deal, decaf: r.decaf,
+        roaster: { slug: r.rslug, name: r.rname, city: r.city, region: r.region, kind: r.segment, local: r.is_local },
+      }));
+      const out: any = { items, total: rows.length ? Number(rows[0].total) : 0, offset, limit };
+      if (body.facets) {
+        const [countries, regions, roasters, stats] = await Promise.all([
+          sql`select origin_country v, count(*)::int n from magiccafe.coffees where available and origin_country is not null group by 1 order by 2 desc`,
+          sql`select r.region v, count(distinct r.id)::int n from magiccafe.roasters r join magiccafe.coffees c on c.roaster_id = r.id and c.available where r.active group by 1 order by 1`,
+          sql`select r.slug, r.name, r.city, r.region, r.segment kind, count(c.id)::int n from magiccafe.roasters r join magiccafe.coffees c on c.roaster_id = r.id and c.available
+              where r.active and r.consent_status <> 'odmowa' group by 1,2,3,4,5 order by 2`,
+          sql`select count(*)::int coffees, count(distinct roaster_id)::int roasters, max(last_seen_at) updated from magiccafe.coffees where available`,
+        ]);
+        out.facets = { countries, regions, roasters };
+        out.stats = stats[0];
+      }
+      return json(out);
+    }
 
     if (action === "faq") {
       let rows = await sql`select id,drink,cat,q,a,tags,src from magiccafe.faq order by sort, id`;
