@@ -15,7 +15,8 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=Archivo:wght@400;500;600;700;800&family=Bowlby+One&family=Michroma&family=VT323&display=swap">
-<style>:root{color-scheme:light;padding:env(safe-area-inset-top,0px) 0 env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
+<style>:root{color-scheme:light;padding:env(safe-area-inset-top,0px) 0 env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}[hidden]{display:none!important}
+</style>
 <style>
 /* Układ: jedna spokojna kolumna z pięcioma widokami. Biel, powietrze i cienkie linie jak w skandynawskim wnętrzu;
    kolor Hawajów tylko w płaskich plamach (słońce, łuk, laguna) i w stanach nastawu. */
@@ -557,12 +558,45 @@ input[type=text],input[type=number],input[type=date],select,textarea{border:2px 
 .shop-msg{border:2px dashed var(--ink);border-radius:var(--r-lg);padding:22px;display:flex;flex-direction:column;gap:10px;align-items:flex-start}
 .shop-skel{height:220px;border:2px solid var(--line);border-radius:var(--r-lg);background:repeating-linear-gradient(-45deg,var(--surface),var(--surface) 12px,var(--surface-2) 12px,var(--surface-2) 24px)}
 @media (prefers-reduced-motion:no-preference){ .shop-skel{animation:skel 1.4s linear infinite;background-size:200% 100%} @keyframes skel{to{background-position:-68px 0}} }
+
+/* karty klubowe (profile) i udostępnianie */
+.suite-in{justify-content:flex-start}
+.suite-top .seg{margin-left:auto}
+.hdr-tools{display:flex;align-items:center;gap:8px;flex:none}
+.prof-btn{flex:none;height:40px;min-width:40px;padding:0 10px 0 4px;border-radius:4px;border:2px solid #0A0B2E;background:var(--night);color:var(--osd-yellow);display:inline-flex;align-items:center;gap:8px;cursor:pointer;font-family:var(--osd);font-size:1.05rem;letter-spacing:.04em}
+.prof-btn .av{width:28px;height:28px;border-radius:50%;display:grid;place-items:center;font-size:1rem;background:var(--pc,#FFC400);border:2px solid #0A0B2E;font-family:system-ui,sans-serif;flex:none}
+.prof-btn .nm{max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+@media (max-width:620px){ .suite-top .seg{order:3;margin-left:0} .hdr-tools{margin-left:auto} .prof-btn .nm{display:none} .prof-btn{padding:0 4px} }
+.prof-dlg{border:0;padding:0;background:transparent;max-width:none;max-height:none;color:var(--ink)}
+.prof-dlg::backdrop{background:rgba(6,7,30,.86)}
+.prof-box{width:min(94vw,580px);max-height:88vh;overflow:auto;background:var(--surface);border:2px solid var(--ink);box-shadow:6px 6px 0 var(--hibiscus);border-radius:var(--r-lg);padding:clamp(16px,3vw,24px);display:flex;flex-direction:column;gap:16px}
+.prof-head{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:2px 12px;align-items:start}
+.prof-head h2{font-size:clamp(1.5rem,4vw,2rem);grid-column:1}
+.prof-head .eyebrow{grid-column:1}
+.prof-x{grid-column:2;grid-row:1/3;width:40px;height:40px;border:2px solid var(--ink);background:var(--surface);border-radius:4px;box-shadow:2px 2px 0 var(--ink);font-weight:700;cursor:pointer}
+.prof-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(104px,1fr));gap:12px}
+.prof-card{border:2px solid var(--ink);background:var(--surface);border-radius:var(--r-md);padding:12px 8px 10px;display:flex;flex-direction:column;align-items:center;gap:6px;cursor:pointer;font-weight:700;font-size:.92rem;text-align:center;color:var(--ink)}
+.prof-card[aria-pressed="true"]{box-shadow:3px 3px 0 var(--lagoon);background:var(--mango-soft)}
+.prof-card.add{border-style:dashed;color:var(--muted);box-shadow:none}
+.prof-card .av,.prof-form .av{width:56px;height:56px;border-radius:50%;display:grid;place-items:center;font-size:1.8rem;background:var(--pc);border:2px solid var(--ink);font-family:system-ui,sans-serif;flex:none}
+.prof-form{display:flex;gap:14px;align-items:center}
+.prof-form .av.big{width:64px;height:64px;font-size:2.1rem}
+.prof-card .nm{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.em-row{display:flex;flex-wrap:wrap;gap:6px}
+.em-row button,.col-row button{width:42px;height:42px;border:2px solid var(--line);border-radius:50%;background:var(--surface);font-size:1.35rem;display:grid;place-items:center;cursor:pointer;padding:0}
+.em-row button[aria-pressed="true"],.col-row button[aria-pressed="true"]{border-color:var(--ink);box-shadow:2px 2px 0 var(--ink)}
+.col-row{display:flex;gap:8px;flex-wrap:wrap}
+.share{display:flex;flex-direction:column;gap:10px;border-top:2px dashed var(--line);padding-top:16px}
+.share-row{display:flex;gap:16px;align-items:flex-start;flex-wrap:wrap}
+.qr{width:150px;height:150px;background:#fff;padding:9px;border:2px solid var(--ink);box-shadow:4px 4px 0 var(--lagoon);flex:none}
+.qr svg{width:100%;height:100%;display:block}
+
 </style>
 </head>
 <body>
 <div class="splash" id="splash" role="button" tabindex="0" aria-label="Magic Cafe. Wypożyczalnia napojów i dobrych momentów. Dotknij, aby wejść."><div class="sign sp-sign" aria-hidden="true"><svg class="sign-sq" viewBox="0 0 200 200" aria-hidden="true"><defs><linearGradient id="sp-a" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#FFFFFF"/><stop offset=".5" stop-color="#FFF7B8"/><stop offset="1" stop-color="#F2D94A"/></linearGradient></defs><rect width="200" height="200" fill="#2A2F96"/><polygon points="26.0,25.0 28.2,31.8 35.0,34.0 28.2,36.2 26.0,43.0 23.8,36.2 17.0,34.0 23.8,31.8" fill="#3DDC84"/><polygon points="170.0,23.0 171.7,28.3 177.0,30.0 171.7,31.7 170.0,37.0 168.3,31.7 163.0,30.0 168.3,28.3" fill="#3FD0FF"/><polygon points="40.0,161.0 41.7,166.3 47.0,168.0 41.7,169.7 40.0,175.0 38.3,169.7 33.0,168.0 38.3,166.3" fill="#3FD0FF"/><polygon points="166.0,150.0 168.4,157.6 176.0,160.0 168.4,162.4 166.0,170.0 163.6,162.4 156.0,160.0 163.6,157.6" fill="#3DDC84"/><polygon points="150.0,66.0 151.0,69.0 154.0,70.0 151.0,71.0 150.0,74.0 149.0,71.0 146.0,70.0 149.0,69.0" fill="#3DDC84"/><polygon points="58.0,136.0 59.0,139.0 62.0,140.0 59.0,141.0 58.0,144.0 57.0,141.0 54.0,140.0 57.0,139.0" fill="#3FD0FF"/><text x="100" y="119" text-anchor="middle" transform="rotate(-22 100 100)" font-family="'Bowlby One','Anton',Impact,sans-serif" font-size="52" fill="url(#sp-a)" stroke="#0A0B2E" stroke-width="5" paint-order="stroke" stroke-linejoin="round" textLength="178" lengthAdjust="spacingAndGlyphs">MAGIC</text></svg><div class="sign-panel"><span class="l1">Wypożyczalnia napojów</span><span class="l2">i dobrych momentów</span></div><svg class="sign-sq right" viewBox="0 0 200 200" aria-hidden="true"><defs><linearGradient id="sp-b" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#FFFFFF"/><stop offset=".5" stop-color="#FFF7B8"/><stop offset="1" stop-color="#F2D94A"/></linearGradient></defs><rect width="200" height="200" fill="#2A2F96"/><polygon points="30.0,22.0 31.9,28.1 38.0,30.0 31.9,31.9 30.0,38.0 28.1,31.9 22.0,30.0 28.1,28.1" fill="#3FD0FF"/><polygon points="168.0,31.0 170.2,37.8 177.0,40.0 170.2,42.2 168.0,49.0 165.8,42.2 159.0,40.0 165.8,37.8" fill="#3DDC84"/><polygon points="36.0,151.0 38.2,157.8 45.0,160.0 38.2,162.2 36.0,169.0 33.8,162.2 27.0,160.0 33.8,157.8" fill="#3DDC84"/><polygon points="170.0,159.0 171.7,164.3 177.0,166.0 171.7,167.7 170.0,173.0 168.3,167.7 163.0,166.0 168.3,164.3" fill="#3FD0FF"/><polygon points="60.0,56.0 61.0,59.0 64.0,60.0 61.0,61.0 60.0,64.0 59.0,61.0 56.0,60.0 59.0,59.0" fill="#3DDC84"/><polygon points="140.0,146.0 141.0,149.0 144.0,150.0 141.0,151.0 140.0,154.0 139.0,151.0 136.0,150.0 139.0,149.0" fill="#3FD0FF"/><text x="100" y="119" text-anchor="middle" transform="rotate(-22 100 100)" font-family="'Bowlby One','Anton',Impact,sans-serif" font-size="52" fill="url(#sp-b)" stroke="#0A0B2E" stroke-width="5" paint-order="stroke" stroke-linejoin="round" textLength="150" lengthAdjust="spacingAndGlyphs">CAFE</text></svg></div><div class="sp-play" aria-hidden="true">▶ Play</div><div class="sp-hint" aria-hidden="true">Dotknij, aby wejść</div></div>
 <header class="suite-top"><div class="suite-in">
-  <div class="brand"><svg class="mini" viewBox="0 0 64 40" aria-hidden="true"><defs><linearGradient id="mg-mini" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#FFFFFF"/><stop offset="1" stop-color="#F2D94A"/></linearGradient></defs><rect width="64" height="40" fill="#2A2F96"/><polygon points="8.0,4.0 9.0,7.0 12.0,8.0 9.0,9.0 8.0,12.0 7.0,9.0 4.0,8.0 7.0,7.0" fill="#3DDC84"/><polygon points="56.0,28.0 57.0,31.0 60.0,32.0 57.0,33.0 56.0,36.0 55.0,33.0 52.0,32.0 55.0,31.0" fill="#3FD0FF"/><text x="32" y="26.5" text-anchor="middle" transform="rotate(-10 32 20)" font-family="'Bowlby One','Anton',Impact,sans-serif" font-size="16" fill="url(#mg-mini)" stroke="#0A0B2E" stroke-width="2" paint-order="stroke" textLength="54" lengthAdjust="spacingAndGlyphs">MAGIC</text></svg><span>Magic Cafe</span></div><button type="button" class="fs-btn" id="fs-btn" aria-label="Pełny ekran" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg></button>
+  <div class="brand"><svg class="mini" viewBox="0 0 64 40" aria-hidden="true"><defs><linearGradient id="mg-mini" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#FFFFFF"/><stop offset="1" stop-color="#F2D94A"/></linearGradient></defs><rect width="64" height="40" fill="#2A2F96"/><polygon points="8.0,4.0 9.0,7.0 12.0,8.0 9.0,9.0 8.0,12.0 7.0,9.0 4.0,8.0 7.0,7.0" fill="#3DDC84"/><polygon points="56.0,28.0 57.0,31.0 60.0,32.0 57.0,33.0 56.0,36.0 55.0,33.0 52.0,32.0 55.0,31.0" fill="#3FD0FF"/><text x="32" y="26.5" text-anchor="middle" transform="rotate(-10 32 20)" font-family="'Bowlby One','Anton',Impact,sans-serif" font-size="16" fill="url(#mg-mini)" stroke="#0A0B2E" stroke-width="2" paint-order="stroke" textLength="54" lengthAdjust="spacingAndGlyphs">MAGIC</text></svg><span>Magic Cafe</span></div><div class="hdr-tools"><button type="button" class="prof-btn" id="prof-btn" aria-label="Karta klubowa"></button><button type="button" class="fs-btn" id="fs-btn" aria-label="Pełny ekran" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg></button></div>
   <div class="seg" id="suite-seg" role="group" aria-label="Dział"><button type="button" data-app="store">Półki</button><button type="button" data-app="kombucha">Kombucha</button><button type="button" data-app="kawa">Kawa</button><button type="button" data-app="matcha">Matcha</button><button type="button" data-app="bar">Shaki</button><button type="button" data-app="pytania">Pytania</button></div>
 </div></header>
 <div class="rainbow" aria-hidden="true"></div>
@@ -572,7 +606,7 @@ input[type=text],input[type=number],input[type=date],select,textarea{border:2px 
   <div class="strip" id="store-strip"></div>
   <div class="gchips" id="store-genres" role="group" aria-label="Gatunek"></div>
   <div id="store-shelves" class="shelves"></div>
-  <div class="store-foot"><span>Zdejmij kasetę z półki: z przodu okładka, z tyłu przepis. „Odtwórz” otwiera pełny przepis z suwakami, przelicznikiem porcji i stoperem.</span><span>Okładki są rysowane. W każdej kasecie możesz podmienić ilustrację na własne zdjęcie napoju. Karta klubowa i własne zdjęcia okładek zapisują się na tym urządzeniu.</span></div>
+  <div class="store-foot"><span>Zdejmij kasetę z półki: z przodu okładka, z tyłu przepis. „Odtwórz” otwiera pełny przepis z suwakami, przelicznikiem porcji i stoperem.</span><span>Okładki są rysowane. W każdej kasecie możesz podmienić ilustrację na własne zdjęcie napoju. Karta klubowa i własne zdjęcia okładek zapisują się na tym urządzeniu. Ikona karty w nagłówku: osobne karty dla domowników i udostępnianie aplikacji.</span></div>
 </div></main>
 <div class="app" id="app-kombucha" hidden><div class="wrap">
   <header class="top">
@@ -1281,6 +1315,7 @@ input[type=text],input[type=number],input[type=date],select,textarea{border:2px 
   <div class="case-bar"><button class="btn dark" type="button" id="case-flip">Przepis</button><button class="btn dark" type="button" id="case-fav" aria-pressed="false">☆ Na kartę</button><button class="btn play" type="button" id="case-play">▶ Odtwórz</button><button class="btn dark" type="button" id="case-close">Odłóż</button></div>
   <input type="file" id="case-file" accept="image/*" aria-label="Zdjęcie na okładkę" hidden>
 </div></dialog>
+<dialog class="prof-dlg" id="prof-dlg" aria-labelledby="prof-title"><div class="prof-box" id="prof-box"></div></dialog>
 <script>
 window.__magic={};
 /* ---------- Magic Cafe: silnik wiedzy i oceny zdjęć (Supabase) ----------
@@ -4760,6 +4795,124 @@ function open(){
 /* wyszukiwanie z innych działów: MC_QA.ask('grzybek przechowywanie') */
 function ask(text,f){if(window.MC_SHOW)window.MC_SHOW('pytania');filter=f||'all';q=text||'';var i=$('qa-q');if(i)i.value=q;render()}
 return {open:open,ask:ask,load:load};
+})();
+</script>
+<script>
+/* ---------- Karty klubowe (profile) i udostępnianie aplikacji ---------- */
+window.MC_PROFILE=(function(){
+'use strict';
+var D=document,PK='magiccafe-profiles-v1',URL_APP='https://piomiz.github.io/magiccafe/';
+/* dane każdej karty: wszystkie klucze działów + kod kopii w chmurze (każda karta ma własny) */
+var KEYS=['aloha-kombucha-v1','aloha-kawa-v1','aloha-kawa-gear-v1','aloha-matcha-v1','aloha-bar-v1','magic-cafe-v1','magiccafe-sync-v1'];
+var EMO=['☕','🍵','🧋','🥤','🍋','🍓','🥝','🫐','🍑','🍍','🥥','🌿','🫖','🍯','🧊','⭐'];
+var COL=['#FFC400','#FF5A36','#3DDC84','#3FD0FF','#D6145F','#FFB1D9','#B98A4A','#F2F2EC'];
+function $(id){return D.getElementById(id)}
+function el(tag,a){var e=D.createElement(tag),k,i;if(a)for(k in a){var v=a[k];if(v==null||v===false)continue;if(k==='class')e.className=v;else if(k==='text')e.textContent=v;else if(k.slice(0,2)==='on')e.addEventListener(k.slice(2),v);else if(k==='value'||k==='disabled'||k==='hidden'||k==='open')e[k]=v;else e.setAttribute(k,v)}
+  for(i=2;i<arguments.length;i++){var c=arguments[i];if(c==null||c===false)continue;if(Array.isArray(c))c.forEach(function(x){if(x)e.append(x)});else e.append(c)}return e}
+function ls(k,v){try{if(v===undefined)return localStorage.getItem(k);if(v===null)localStorage.removeItem(k);else localStorage.setItem(k,v);return true}catch(e){return null}}
+function uid(){var A='abcdefghjkmnpqrstuvwxyz23456789',r=new Uint8Array(8),o='',i;crypto.getRandomValues(r);for(i=0;i<8;i++)o+=A[r[i]%A.length];return o}
+function clean(p){
+  if(!p||!Array.isArray(p.list)||!p.list.length)return null;
+  var o={active:String(p.active||''),list:[],data:(p.data&&typeof p.data==='object')?p.data:{}};
+  p.list.forEach(function(x){if(!x||typeof x.id!=='string')return;o.list.push({id:x.id,name:String(x.name||'Karta').slice(0,24),em:EMO.indexOf(x.em)>=0?x.em:'☕',col:COL.indexOf(x.col)>=0?x.col:COL[0],at:+x.at||Date.now()})});
+  if(!o.list.length)return null;
+  if(!o.list.some(function(x){return x.id===o.active}))o.active=o.list[0].id;
+  return o;
+}
+function load(){try{return clean(JSON.parse(ls(PK)))}catch(e){return null}}
+function save(p){return ls(PK,JSON.stringify(p))}
+function init(){var p=load();if(!p){var id=uid();p={active:id,list:[{id:id,name:'Moja karta',em:'☕',col:COL[0],at:Date.now()}],data:{}};save(p)}return p}
+function active(p){p=p||load();var a=null;p.list.forEach(function(x){if(x.id===p.active)a=x});return a||p.list[0]}
+function snapshot(){var o={};KEYS.forEach(function(k){var v=ls(k);if(v!=null)o[k]=v});return o}
+function apply(o){KEYS.forEach(function(k){ls(k,null)});Object.keys(o||{}).forEach(function(k){if(KEYS.indexOf(k)>=0)ls(k,o[k])})}
+var msg='';
+function switchTo(id){
+  var p=load();if(!p||id===p.active||!p.list.some(function(x){return x.id===id}))return;
+  p.data[p.active]=snapshot();var tgt=p.data[id]||{};delete p.data[id];p.active=id;
+  if(!save(p)){msg='Za mało miejsca w przeglądarce, żeby zapisać tę kartę. Usuń własne zdjęcia okładek albo inną kartę.';render();return}
+  apply(tgt);location.reload();
+}
+function create(name,em,col){
+  var p=load(),id=uid();p.list.push({id:id,name:name,em:em,col:col,at:Date.now()});
+  p.data[p.active]=snapshot();p.active=id;
+  if(!save(p)){msg='Za mało miejsca w przeglądarce na nową kartę.';render();return}
+  apply({});location.reload();
+}
+function update(id,name,em,col){var p=load();p.list.forEach(function(x){if(x.id===id){x.name=name;x.em=em;x.col=col}});save(p);view='list';render();paintBtn()}
+function remove(id){
+  var p=load();if(p.list.length<2)return;
+  var other=null;p.list.forEach(function(x){if(!other&&x.id!==id)other=x.id});
+  p.list=p.list.filter(function(x){return x.id!==id});delete p.data[id];
+  if(id===p.active){var tgt=p.data[other]||{};delete p.data[other];p.active=other;save(p);apply(tgt);location.reload();return}
+  save(p);view='list';render();
+}
+/* ---------- przycisk w nagłówku ---------- */
+function paintBtn(){var b=$('prof-btn');if(!b)return;var a=active();b.textContent='';b.append(el('span',{class:'av',style:'--pc:'+a.col,text:a.em}),el('span',{class:'nm',text:a.name}));b.setAttribute('aria-label','Karta klubowa: '+a.name)}
+/* ---------- okno ---------- */
+var view='list',edit=null,form={name:'',em:EMO[0],col:COL[0]};
+function open(){init();view='list';msg='';render();var d=$('prof-dlg');if(d&&!d.open){try{d.showModal()}catch(e){d.setAttribute('open','')}}}
+function close(){var d=$('prof-dlg');if(d&&d.open)d.close()}
+function render(){
+  var box=$('prof-box');if(!box)return;box.textContent='';
+  var p=init(),a=active(p);
+  box.append(el('div',{class:'prof-head'},el('p',{class:'eyebrow',text:'Karta klubowa'}),el('h2',{text:view==='list'?'Kto dziś ogląda?':edit?'Edytuj kartę':'Nowa karta'}),
+    el('button',{class:'prof-x',type:'button','aria-label':'Zamknij',text:'✕',onclick:close})));
+  if(view==='list'){
+    box.append(el('p',{class:'muted',style:'font-size:.92rem',text:'Każda karta to osobny klubowicz: własne ulubione kasety, nastawy kombuchy, dziennik kawy i ustawienia. Zmiana karty przeładowuje aplikację.'}));
+    var g=el('div',{class:'prof-grid'});
+    p.list.forEach(function(x){g.append(el('button',{class:'prof-card',type:'button','aria-pressed':String(x.id===a.id),onclick:function(){if(x.id===a.id){edit=x;form={name:x.name,em:x.em,col:x.col};view='edit';render()}else switchTo(x.id)}},
+      el('span',{class:'av',style:'--pc:'+x.col,text:x.em}),el('span',{class:'nm',text:x.name}),el('span',{class:'muted',style:'font-size:.76rem;font-weight:500',text:x.id===a.id?'teraz · edytuj':'przełącz'})))});
+    g.append(el('button',{class:'prof-card add',type:'button',onclick:function(){edit=null;form={name:'',em:EMO[(p.list.length)%EMO.length],col:COL[p.list.length%COL.length]};view='edit';render();setTimeout(function(){var i=$('prof-name');if(i)i.focus()},50)}},
+      el('span',{class:'av',style:'--pc:transparent',text:'+'}),el('span',{class:'nm',text:'Dodaj kartę'})));
+    box.append(g);
+    if(msg)box.append(el('p',{class:'muted',text:msg}));
+    box.append(el('p',{class:'muted',style:'font-size:.86rem'},'Ta sama karta na drugim telefonie? Włącz dla niej kopię w chmurze i wpisz kod na drugim urządzeniu. ',
+      el('a',{href:'#',text:'Otwórz kopię zapasową',onclick:function(ev){ev.preventDefault();close();goBackup()}})));
+    box.append(renderShare());
+  }else{
+    var nm=el('input',{type:'text',id:'prof-name',maxlength:'24',placeholder:'np. Piotr, Mama, Goście',value:form.name,autocomplete:'off',oninput:function(ev){form.name=ev.target.value}});
+    var emr=el('div',{class:'em-row'}),cr=el('div',{class:'col-row'});
+    function paintPick(){Array.prototype.forEach.call(emr.children,function(b){b.setAttribute('aria-pressed',String(b.textContent===form.em))});Array.prototype.forEach.call(cr.children,function(b){b.setAttribute('aria-pressed',String(b.dataset.c===form.col))});var pv=$('prof-prev');if(pv){pv.style.setProperty('--pc',form.col);pv.textContent=form.em}}
+    EMO.forEach(function(e){emr.append(el('button',{type:'button',text:e,'aria-label':'Awatar '+e,onclick:function(){form.em=e;paintPick()}}))});
+    COL.forEach(function(c){cr.append(el('button',{type:'button','data-c':c,style:'background:'+c,'aria-label':'Kolor',onclick:function(){form.col=c;paintPick()}}))});
+    box.append(el('div',{class:'prof-form'},el('span',{class:'av big',id:'prof-prev',style:'--pc:'+form.col,text:form.em}),
+      el('div',{class:'field',style:'flex:1'},el('label',{for:'prof-name',text:'Imię na karcie'}),nm)));
+    box.append(el('div',{class:'field'},el('span',{class:'label',text:'Awatar'}),emr),el('div',{class:'field'},el('span',{class:'label',text:'Kolor karty'}),cr));
+    var row=el('div',{class:'row'},el('button',{class:'btn',type:'button',text:edit?'Zapisz':'Załóż kartę',onclick:function(){var n=form.name.trim()||(edit?edit.name:'Klubowicz');if(edit)update(edit.id,n,form.em,form.col);else create(n,form.em,form.col)}}),
+      el('button',{class:'btn ghost',type:'button',text:'Anuluj',onclick:function(){view='list';render()}}));
+    if(edit&&p.list.length>1)row.append(el('button',{class:'btn danger small',type:'button',style:'margin-left:auto',text:'Usuń kartę',onclick:function(){if(confirm('Usunąć kartę „'+edit.name+'” razem z jej nastawami, dziennikiem i ulubionymi? Tego nie da się cofnąć.'))remove(edit.id)}}));
+    box.append(row);
+    if(!edit)box.append(el('p',{class:'muted',style:'font-size:.86rem',text:'Nowa karta startuje z pustymi półkami ulubionych i czystym dziennikiem. Twoja obecna karta zostaje zapisana.'}));
+    paintPick();
+  }
+}
+/* ---------- udostępnianie aplikacji ---------- */
+var QR='M0 0.5h7m7 0h1m2 0h3m2 0h7M0 1.5h1m5 0h1m2 0h1m2 0h1m3 0h2m4 0h1m5 0h1M0 2.5h1m1 0h3m1 0h1m2 0h3m2 0h2m1 0h1m1 0h2m1 0h1m1 0h3m1 0h1M0 3.5h1m1 0h3m1 0h1m3 0h4m4 0h1m3 0h1m1 0h3m1 0h1M0 4.5h1m1 0h3m1 0h1m2 0h1m7 0h2m1 0h1m1 0h1m1 0h3m1 0h1M0 5.5h1m5 0h1m1 0h1m1 0h2m3 0h6m1 0h1m5 0h1M0 6.5h7m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h7M9 7.5h1m1 0h1m1 0h1m3 0h3M0 8.5h1m2 0h1m1 0h2m1 0h1m2 0h2m1 0h3m1 0h1m2 0h1m1 0h1M4 9.5h2m2 0h6m6 0h3m2 0h1m2 0h1M0 10.5h1m1 0h1m1 0h4m1 0h2m1 0h3m1 0h2m1 0h1m2 0h6M0 11.5h6m4 0h4m1 0h2m1 0h2m3 0h2m1 0h2M0 12.5h1m3 0h1m1 0h1m1 0h3m3 0h1m1 0h2m3 0h2m2 0h1m1 0h2M1 13.5h1m1 0h1m1 0h1m3 0h6m4 0h2M1 14.5h1m2 0h4m3 0h4m1 0h2m7 0h4M1 15.5h1m5 0h2m1 0h1m1 0h1m3 0h4m1 0h2m1 0h2m1 0h1M4 16.5h1m1 0h1m2 0h2m1 0h2m3 0h1m2 0h1m6 0h1M2 17.5h2m1 0h1m1 0h3m3 0h2m1 0h1m4 0h3m1 0h1m2 0h1M0 18.5h1m1 0h5m3 0h2m2 0h1m3 0h1m1 0h2m1 0h2m2 0h2M2 19.5h1m2 0h1m1 0h1m2 0h1m3 0h5m1 0h2m1 0h2m2 0h2M0 20.5h1m2 0h2m1 0h1m2 0h1m6 0h1m3 0h5m1 0h1M8 21.5h1m2 0h1m2 0h1m1 0h2m2 0h1m3 0h1m1 0h3M0 22.5h7m3 0h3m3 0h2m2 0h1m1 0h1m1 0h1m2 0h1M0 23.5h1m5 0h1m1 0h3m3 0h1m3 0h1m1 0h1m3 0h3m1 0h1M0 24.5h1m1 0h3m1 0h1m3 0h1m1 0h1m3 0h2m2 0h5m3 0h1M0 25.5h1m1 0h3m1 0h1m1 0h2m1 0h1m1 0h1m5 0h1m2 0h6M0 26.5h1m1 0h3m1 0h1m2 0h2m1 0h1m1 0h1m2 0h2m1 0h1m3 0h3m1 0h1M0 27.5h1m5 0h1m2 0h2m6 0h4m2 0h1m3 0h1M0 28.5h7m1 0h3m1 0h2m3 0h1m2 0h3m1 0h1m2 0h1';
+function renderShare(){
+  var s=el('div',{class:'share'},el('p',{class:'eyebrow',text:'Poleć znajomym'}),el('h3',{text:'Udostępnij Magic Cafe'}),
+    el('p',{class:'muted',style:'font-size:.9rem',text:'Aplikacja jest darmowa i działa w przeglądarce. Znajomy skanuje kod albo otwiera link, a potem wybiera „Dodaj do ekranu głównego” – i ma Magic Cafe jak zwykłą aplikację.'}));
+  var qr=el('div',{class:'qr','aria-label':'Kod QR z adresem aplikacji',role:'img'});
+  qr.innerHTML='<svg viewBox="0 0 29 29" shape-rendering="crispEdges"><path fill="#fff" d="M0 0h29v29H0z"/><path stroke="#0A0B2E" d="'+QR+'"/></svg>';
+  var link=el('div',{class:'codebox',style:'font-size:.95rem',text:URL_APP});
+  var btns=el('div',{class:'row'});
+  var text='Magic Cafe – wypożyczalnia napojów i dobrych momentów: kombucha, kawa, matcha, shaki. Przepisy z suwakami i stoperem, za darmo w przeglądarce: ';
+  if(navigator.share)btns.append(el('button',{class:'btn',type:'button',text:'Udostępnij…',onclick:function(){navigator.share({title:'Magic Cafe',text:text,url:URL_APP}).catch(function(){})}}));
+  btns.append(el('button',{class:'btn ghost',type:'button',text:'Kopiuj link',onclick:function(ev){var b=ev.target;function ok(){b.textContent='Skopiowano';setTimeout(function(){b.textContent='Kopiuj link'},1800)}
+    if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(URL_APP).then(ok).catch(function(){});else{var r=D.createRange();r.selectNodeContents(link);var sel=getSelection();sel.removeAllRanges();sel.addRange(r);try{D.execCommand('copy');ok()}catch(e){}}}}));
+  btns.append(el('a',{class:'btn ghost small',href:'https://wa.me/?text='+encodeURIComponent(text+URL_APP),target:'_blank',rel:'noopener',text:'WhatsApp'}),
+    el('a',{class:'btn ghost small',href:'mailto:?subject='+encodeURIComponent('Magic Cafe – aplikacja do napojów')+'&body='+encodeURIComponent(text+URL_APP),text:'E-mail'}));
+  s.append(el('div',{class:'share-row'},qr,el('div',{style:'display:flex;flex-direction:column;gap:10px;flex:1;min-width:200px'},link,btns)));
+  return s;
+}
+function goBackup(){
+  if(window.MC_SHOW)window.MC_SHOW('kombucha',true);
+  var app=$('app-kombucha'),t=app&&app.querySelector('.tab[data-tab="nastaw"]');if(t&&t.getAttribute('aria-current')!=='page')t.click();
+  setTimeout(function(){var b=$('backup-sec');if(b)b.scrollIntoView({behavior:'smooth',block:'start'})},80);
+}
+function boot(){init();paintBtn();var b=$('prof-btn');if(b)b.addEventListener('click',open);
+  var d=$('prof-dlg');if(d)d.addEventListener('click',function(ev){if(ev.target===d)close()})}
+if(D.readyState==='loading')D.addEventListener('DOMContentLoaded',boot);else boot();
+return {open:open,close:close,active:function(){return active()},share:function(){open();setTimeout(function(){var s=D.querySelector('#prof-box .share');if(s)s.scrollIntoView({behavior:'smooth'})},60)}};
 })();
 </script>
 <script>

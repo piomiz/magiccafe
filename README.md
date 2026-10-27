@@ -12,6 +12,13 @@ Ocena zdjęć (kombucha, mielenie, etykieta) idzie przez Edge Function `magiccaf
 Sekrety funkcji: `ANTHROPIC_API_KEY` (wymagany), `ANTHROPIC_MODEL`, `MC_DAILY_LIMIT` (dziennie łącznie, domyślnie 150), `MC_CLIENT_LIMIT` (na urządzenie, domyślnie 25).
 Kod funkcji: `supabase/functions/magiccafe/index.ts`.
 
+## Karty klubowe (profile) i udostępnianie
+Ikona karty w nagłówku otwiera okno „Kto dziś ogląda?”. Każda karta (imię, awatar, kolor) ma osobne ulubione, nastawy, dzienniki,
+ustawienia i własny kod kopii w chmurze. Dane aktywnej karty leżą w zwykłych kluczach localStorage; nieaktywne karty są zapisane
+w `magiccafe-profiles-v1` i podmieniane przy przełączeniu (aplikacja się przeładowuje). Nową kartę zakłada się z czystym stanem.
+W tym samym oknie jest udostępnianie aplikacji: udostępnianie systemowe (Web Share), kopiowanie linku, WhatsApp, e-mail i kod QR
+z adresem `https://piomiz.github.io/magiccafe/` (SVG wbudowany w index.html).
+
 ## Dziennik nastawu i kopia zapasowa
 Nastawy są zapisane w przeglądarce (localStorage). Karta nastawu zapisuje parametry w chwili startu fermentacji; suwaki później to tylko podgląd. Poprawki karty trafiają do dziennika.
 Kopia: plik JSON (Nastaw → Kopia zapasowa) albo kopia w chmurze w tabeli `magiccafe.journals` pod prywatnym 16-znakowym kodem.
